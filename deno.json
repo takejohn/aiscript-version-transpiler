@@ -4,6 +4,9 @@
 		"useTabs": true,
 		"singleQuote": true
 	},
+	"test": {
+		"include": ["test/**/*.ts"]
+	},
 	"imports": {
 		"aiscript@0.19.0": "npm:@syuilo/aiscript@0.19.0",
 		"aiscript@1.1.0": "npm:@syuilo/aiscript@1.1.0",
