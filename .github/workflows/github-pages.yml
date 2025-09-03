@@ -23,13 +23,13 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies (aiscript-version-transpiler)
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build (aiscript-version-transpiler)
         run: pnpm run build
 
       - name: Install dependencies (pages)
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
         working-directory: ./pages
 
       - name: Build (pages)
