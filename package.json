@@ -3,6 +3,16 @@
   "version": "0.1.0",
   "description": "A transpiler to convert AiScript code into a newer version",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/main.js",
+      "types": "./dist/main.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "lint": "eslint .",
