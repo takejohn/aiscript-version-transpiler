@@ -7,6 +7,10 @@ on:
 
 jobs:
   deploy:
+    permissions:
+      pages: write
+      id-token: write
+
     runs-on: ubuntu-22.04
 
     steps:
@@ -36,8 +40,14 @@ jobs:
         run: pnpm run build
         working-directory: ./pages
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5.0.0
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4.0.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./pages/dist
+          path: './pages/dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4.0.5
