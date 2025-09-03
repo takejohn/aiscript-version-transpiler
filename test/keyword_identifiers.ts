@@ -1,8 +1,8 @@
-import { assertEquals, assertThrows } from '@std/assert';
+import { assertThrows } from '@std/assert';
 
 import { transpile } from '../src/main.ts';
 import { errors as errors_0_19_0 } from 'aiscript@0.19.0';
-import { Parser as Parser_1_1_0 } from 'aiscript@1.1.0';
+import { transpileAndValidate } from './test_utils.ts';
 
 Deno.test('conventional keywords', async (t) => {
 	const cases = [
@@ -90,10 +90,7 @@ Deno.test('identifiers', async (t) => {
 	for (const [keyword, identifier] of cases) {
 		await t.step(keyword, async (t) => {
 			await t.step('variable', () => {
-				const script = keyword;
-				const output = transpile(script);
-				assertEquals(output, identifier);
-				Parser_1_1_0.parse(output); // should not throw
+				transpileAndValidate(keyword, identifier);
 			});
 		});
 	}
