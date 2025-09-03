@@ -1,0 +1,45 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4.1.0
+        with:
+          version: 10
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22.x
+          cache: 'pnpm'
+
+      - name: Install dependencies (aiscript-version-transpiler)
+        run: pnpm ci
+
+      - name: Build (aiscript-version-transpiler)
+        run: pnpm run build
+
+      - name: Install dependencies (pages)
+        run: pnpm ci
+        working-directory: ./pages
+
+      - name: Build (pages)
+        run: pnpm run build
+        working-directory: ./pages
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./pages/dist
