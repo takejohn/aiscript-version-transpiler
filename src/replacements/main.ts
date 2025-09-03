@@ -6,6 +6,8 @@ import { replaceIdentifier } from './identifier.js';
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
 
+	private endOffset = 0;
+
 	public constructor(
 		private script: string,
 		private start: number,
@@ -22,24 +24,33 @@ export class ReplacementsBuilder {
 	): void {
 		const original = sliceInclusive(this.script, start, end);
 		const content = replaceFunc(original);
-		this.replacements.push({ start, end, content });
+		this._addReplacement(start, end, content);
 	}
 
 	public addNodeReplacement(node: Ast.Node): void {
 		const loc = requireLoc(node);
-		this.replacements.push({
-			start: loc.start,
-			end: loc.end,
-			content: replaceRecursive(node, this.script),
-		});
+		this._addReplacement(
+			loc.start,
+			loc.end,
+			replaceRecursive(node, this.script),
+		);
 	}
 
 	public execute(): string {
 		return sliceInclusive(
 			replaceSlices(this.script, this.replacements),
 			this.start,
-			this.end,
+			this.end + this.endOffset,
 		);
+	}
+
+	private _addReplacement(
+		start: number,
+		end: number,
+		content: string,
+	): void {
+		this.replacements.push({ start, end, content });
+		this.endOffset += content.length - (end - start + 1);
 	}
 }
 

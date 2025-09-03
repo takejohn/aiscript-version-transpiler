@@ -108,3 +108,36 @@ describe('if', () => {
 		});
 	});
 });
+
+describe('comments between', () => {
+	test('block comment', () => {
+		const script = dedent`
+			if true /* comment */
+			1
+		`;
+		const expected = dedent`
+			if true /* comment */ 1
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('block comment with line separator', () => {
+		const script = dedent`
+			if true /* comment
+			more comment */ 1
+		`;
+		transpileAndValidate(script, script);
+	});
+
+	test('line comment', () => {
+		const script = dedent`
+			if true // comment
+			1
+		`;
+		const expected = dedent`
+			if true /* comment
+			*/ 1
+		`;
+		transpileAndValidate(script, expected);
+	});
+});

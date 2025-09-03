@@ -1,6 +1,6 @@
 import { Ast } from 'aiscript@0.19.0';
 import { requireLoc } from './main.js';
-import { replaceLineSeparatorsWithSpaces, strictIndexOf } from '../utils.js';
+import { replaceLineSeparators, strictIndexOf } from '../utils.js';
 import { ReplacementsBuilder } from './main.js';
 
 const KEYWORD_IF = 'if';
@@ -16,14 +16,14 @@ export function replaceIf(node: Ast.If, script: string): string {
 	builder.addReplacement(
 		loc.start + KEYWORD_IF.length,
 		condLoc.start - 1,
-		replaceLineSeparatorsWithSpaces,
+		replaceLineSeparators,
 	);
 
 	builder.addNodeReplacement(node.cond);
 	builder.addReplacement(
 		condLoc.end + 1,
 		thenLoc.start - 1,
-		replaceLineSeparatorsWithSpaces,
+		replaceLineSeparators,
 	);
 	builder.addNodeReplacement(node.then);
 
@@ -37,13 +37,13 @@ export function replaceIf(node: Ast.If, script: string): string {
 		builder.addReplacement(
 			keywordElifStart + KEYWORD_ELIF.length,
 			elseifCondLoc.start - 1,
-			replaceLineSeparatorsWithSpaces,
+			replaceLineSeparators,
 		);
 		builder.addNodeReplacement(elseifCond);
 		builder.addReplacement(
 			elseifCondLoc.end + 1,
 			requireLoc(elseifThen).start - 1,
-			replaceLineSeparatorsWithSpaces,
+			replaceLineSeparators,
 		);
 		builder.addNodeReplacement(elseifThen);
 	}
@@ -59,7 +59,7 @@ export function replaceIf(node: Ast.If, script: string): string {
 		builder.addReplacement(
 			keywordElseStart + KEYWORD_ELSE.length,
 			requireLoc(node.else).start - 1,
-			replaceLineSeparatorsWithSpaces,
+			replaceLineSeparators,
 		);
 		builder.addNodeReplacement(node.else);
 	}

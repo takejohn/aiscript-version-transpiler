@@ -55,6 +55,77 @@ export function strictIndexOf(
 	return result;
 }
 
-export function replaceLineSeparatorsWithSpaces(string: string): string {
-	return string.replace(/[\n\r]/g, ' ');
+const LINE_SEPARATORS = /[\n\r]/;
+
+export function replaceLineSeparators(string: string): string {
+	let result = '';
+	let state: 'plain' | 'slash' | 'line-comment' | 'block-comment' | 'block-comment-end' = 'plain';
+
+	for (const char of string) {
+		switch (state) {
+			case 'plain': {
+				if (char === '/') {
+					state = 'slash';
+					result += char;
+				} else if (LINE_SEPARATORS.test(char)) {
+					result += ' ';
+				} else {
+					result += char;
+				}
+				break;
+			}
+
+			case 'slash': {
+				if (char === '/') {
+					state = 'line-comment';
+					result += '*';
+				} else if (char === '*') {
+					state = 'block-comment';
+					result += '*';
+				} else {
+					result += char;
+					state = 'plain';
+				}
+				break;
+			}
+
+			case 'line-comment': {
+				if (LINE_SEPARATORS.test(char)) {
+					state = 'plain';
+					result += char + '*/ ';
+				} else {
+					result += char;
+				}
+				break;
+			}
+
+			case 'block-comment': {
+				if (char === '*') {
+					state = 'block-comment-end';
+				}
+				result += char;
+				break;
+			}
+
+			case 'block-comment-end': {
+				if (char === '/') {
+					state = 'plain';
+				} else if (char !== '*') {
+					state = 'block-comment';
+				}
+				result += char;
+				break;
+			}
+		}
+	}
+
+	switch (state) {
+		case 'line-comment':
+			throw new TypeError('Unterminated line comment');
+		case 'block-comment':
+		case 'block-comment-end':
+			throw new TypeError('Unterminated block comment');
+	}
+
+	return result;
 }
