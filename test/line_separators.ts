@@ -1,30 +1,31 @@
 import { dedent } from 'ts-dedent';
-import { transpileAndValidate } from './test_utils.ts';
+import { transpileAndValidate } from './test_utils.js';
+import { describe, test } from 'vitest';
 
-Deno.test('if', async (t) => {
-	await t.step('between if and cond', () => {
+describe('if', () => {
+	test('between if and cond', () => {
 		const script = dedent`
 			if
 			true 1
 		`;
-		const expect = dedent`
+		const expected = dedent`
 			if true 1
 		`;
-		transpileAndValidate(script, expect);
+		transpileAndValidate(script, expected);
 	});
 
-	await t.step('between cond and then', () => {
+	test('between cond and then', () => {
 		const script = dedent`
 			if true
 			1
 		`;
-		const expect = dedent`
+		const expected = dedent`
 			if true 1
 		`;
-		transpileAndValidate(script, expect);
+		transpileAndValidate(script, expected);
 	});
 
-	await t.step('between then and elif', () => {
+	test('between then and elif', () => {
 		const script = dedent`
 			if true 1
 			elif false 0
@@ -32,34 +33,34 @@ Deno.test('if', async (t) => {
 		transpileAndValidate(script, script);
 	});
 
-	await t.step('between elif and cond', () => {
+	test('between elif and cond', () => {
 		const script = dedent`
 			if true 1
 			elif
 			false 0
 		`;
-		const expect = dedent`
+		const expected = dedent`
 			if true 1
 			elif false 0
 		`;
-		transpileAndValidate(script, expect);
+		transpileAndValidate(script, expected);
 	});
 
-	await t.step('between cond and then of elseif', () => {
+	test('between cond and then of elseif', () => {
 		const script = dedent`
 			if true 1
 			elif false
 			0
 		`;
-		const expect = dedent`
+		const expected = dedent`
 			if true 1
 			elif false 0
 		`;
-		transpileAndValidate(script, expect);
+		transpileAndValidate(script, expected);
 	});
 
-	await t.step('between else and then', async (t) => {
-		await t.step('no elif', () => {
+	describe('between else and then', () => {
+		test('no elif', () => {
 			const script = dedent`
 				if true 1
 				else 0
@@ -67,7 +68,7 @@ Deno.test('if', async (t) => {
 			transpileAndValidate(script, script);
 		});
 
-		await t.step('after elif', () => {
+		test('after elif', () => {
 			const script = dedent`
 				if true 1
 				elif false 2
@@ -77,33 +78,33 @@ Deno.test('if', async (t) => {
 		});
 	});
 
-	await t.step('between else and then', async (t) => {
-		await t.step('no elif', () => {
+	describe('between else and then', () => {
+		test('no elif', () => {
 			const script = dedent`
 				if true 1
 				else
 				0
 			`;
-			const expect = dedent`
+			const expected = dedent`
 				if true 1
 				else 0
 			`;
-			transpileAndValidate(script, expect);
+			transpileAndValidate(script, expected);
 		});
 
-		await t.step('after elif', () => {
+		test('after elif', () => {
 			const script = dedent`
 				if true 1
 				elif false 2
 				else
 				0
 			`;
-			const expect = dedent`
+			const expected = dedent`
 				if true 1
 				elif false 2
 				else 0
 			`;
-			transpileAndValidate(script, expect);
+			transpileAndValidate(script, expected);
 		});
 	});
 });

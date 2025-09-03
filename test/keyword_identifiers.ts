@@ -1,10 +1,8 @@
-import { assertThrows } from '@std/assert';
+import { transpile } from '../src/main.js';
+import { transpileAndValidate } from './test_utils.js';
+import { describe, expect, test } from 'vitest';
 
-import { transpile } from '../src/main.ts';
-import { errors as errors_0_19_0 } from 'aiscript@0.19.0';
-import { transpileAndValidate } from './test_utils.ts';
-
-Deno.test('conventional keywords', async (t) => {
+describe('conventional keywords', () => {
 	const cases = [
 		['null'],
 		['true'],
@@ -36,17 +34,14 @@ Deno.test('conventional keywords', async (t) => {
 		['module'],
 		['namespace'],
 	];
-	for (const [keyword] of cases) {
-		await t.step(keyword, () => {
-			assertThrows(
-				() => transpile(`let ${keyword} = 1`),
-				errors_0_19_0.AiScriptError,
-			);
-		});
-	}
+	test.each(cases)('%s', (keyword) => {
+		expect(
+			() => transpile(`let ${keyword} = 1`),
+		).toThrow();
+	});
 });
 
-Deno.test('identifiers', async (t) => {
+describe('identifiers', () => {
 	const cases = [
 		// new keywords
 		['case', 'case_'],
@@ -87,11 +82,7 @@ Deno.test('identifiers', async (t) => {
 		['foo_', 'foo_'],
 		['case_', 'case__'],
 	];
-	for (const [keyword, identifier] of cases) {
-		await t.step(keyword, async (t) => {
-			await t.step('variable', () => {
-				transpileAndValidate(keyword, identifier);
-			});
-		});
-	}
+	test.each(cases)('%s as variable', (keyword, identifier) => {
+		transpileAndValidate(keyword, identifier);
+	});
 });

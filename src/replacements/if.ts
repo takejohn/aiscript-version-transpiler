@@ -1,7 +1,7 @@
 import { Ast } from 'aiscript@0.19.0';
-import { requireLoc } from './main.ts';
-import { replaceLineSeparatorsWithSpaces, strictIndexOf } from '../utils.ts';
-import { ReplacementsBuilder } from './main.ts';
+import { requireLoc } from './main.js';
+import { replaceLineSeparatorsWithSpaces, strictIndexOf } from '../utils.js';
+import { ReplacementsBuilder } from './main.js';
 
 const KEYWORD_IF = 'if';
 const KEYWORD_ELIF = 'elif';

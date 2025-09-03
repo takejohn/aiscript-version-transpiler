@@ -1,41 +1,41 @@
-import { assertEquals, assertThrows } from '@std/assert';
-import { SliceReplacement } from '../src/utils.ts';
-import { replaceSlices } from '../src/utils.ts';
+import { describe, expect, test } from 'vitest';
+import type { SliceReplacement } from '../src/utils.js';
+import { replaceSlices } from '../src/utils.js';
 
-Deno.test('replaceSlices', async (t) => {
-	await t.step('valid', () => {
+describe('replaceSlices', () => {
+	test('valid', () => {
 		const input = 'Ai is cute';
 		const replacements = [
 			{ start: 3, end: 4, content: 'am' },
 			{ start: 6, end: 9, content: 'kawaii' },
 		] as const satisfies readonly SliceReplacement[];
 		const output = replaceSlices(input, replacements);
-		assertEquals(output, 'Ai am kawaii');
+		expect(output).toBe('Ai am kawaii');
 	});
 
-	await t.step('no replacements', () => {
+	test('no replacements', () => {
 		const input = 'Hello, World!';
 		const replacements = [] as const satisfies readonly SliceReplacement[];
 		const output = replaceSlices(input, replacements);
-		assertEquals(output, input);
+		expect(output).toBe(input);
 	});
 
-	await t.step('adjacent ranges', () => {
+	test('adjacent ranges', () => {
 		const input = 'abcde';
 		const replacements = [
 			{ start: 1, end: 2, content: 'X' },
 			{ start: 3, end: 3, content: 'Y' },
 		] as const satisfies readonly SliceReplacement[];
 		const output = replaceSlices(input, replacements);
-		assertEquals(output, 'aXYe');
+		expect(output).toBe('aXYe');
 	});
 
-	await t.step('overlapping ranges', () => {
+	test('overlapping ranges', () => {
 		const input = 'abcde';
 		const replacement = [
 			{ start: 1, end: 2, content: 'X' },
 			{ start: 2, end: 3, content: 'Y' },
 		] as const satisfies readonly SliceReplacement[];
-		assertThrows(() => replaceSlices(input, replacement), RangeError);
+		expect(() => replaceSlices(input, replacement)).toThrow(RangeError);
 	});
 });

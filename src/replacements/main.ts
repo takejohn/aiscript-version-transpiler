@@ -1,7 +1,7 @@
 import { Ast } from 'aiscript@0.19.0';
-import { replaceSlices, sliceInclusive, SliceReplacement } from '../utils.ts';
-import { replaceIf } from './if.ts';
-import { replaceIdentifier } from './identifier.ts';
+import { replaceSlices, sliceInclusive, type SliceReplacement } from '../utils.js';
+import { replaceIf } from './if.js';
+import { replaceIdentifier } from './identifier.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
