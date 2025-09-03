@@ -34,3 +34,27 @@ export function replaceSlices(
 
 	return result;
 }
+
+export function sliceInclusive(
+	string: string,
+	start: number,
+	end: number,
+): string {
+	return string.slice(start, end + 1);
+}
+
+export function strictIndexOf(
+	string: string,
+	searchString: string,
+	position?: number,
+): number {
+	const result = string.indexOf(searchString, position);
+	if (result < 0) {
+		throw new TypeError(`String '${searchString}' not found`);
+	}
+	return result;
+}
+
+export function replaceLineSeparatorsWithSpaces(string: string): string {
+	return string.replace(/[\n\r]/g, ' ');
+}

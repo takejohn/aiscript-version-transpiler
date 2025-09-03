@@ -4,7 +4,8 @@
     "jsr:@std/assert@1": "1.0.14",
     "jsr:@std/internal@^1.0.10": "1.0.10",
     "npm:@syuilo/aiscript@0.19.0": "0.19.0",
-    "npm:@syuilo/aiscript@1.1.0": "1.1.0"
+    "npm:@syuilo/aiscript@1.1.0": "1.1.0",
+    "npm:ts-dedent@^2.2.0": "2.2.0"
   },
   "jsr": {
     "@std/assert@1.0.14": {
@@ -46,6 +47,9 @@
         "char-regex"
       ]
     },
+    "ts-dedent@2.2.0": {
+      "integrity": "sha512-q5W7tVM71e2xjHZTlgfTDoPF/SmqKG5hddq9SzR49CH2hayqRKJtQ4mtRlSxKaJlR/+9rEM+mnBHf7I2/BQcpQ=="
+    },
     "uuid@11.1.0": {
       "integrity": "sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==",
       "bin": true
@@ -59,7 +63,8 @@
     "dependencies": [
       "jsr:@std/assert@1",
       "npm:@syuilo/aiscript@0.19.0",
-      "npm:@syuilo/aiscript@1.1.0"
+      "npm:@syuilo/aiscript@1.1.0",
+      "npm:ts-dedent@^2.2.0"
     ]
   }
 }
