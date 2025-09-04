@@ -14,6 +14,7 @@ import { replaceEach } from './each.js';
 import { replaceLoop } from './loop.js';
 import { replaceAssign } from './assign.js';
 import { replaceMatch } from './match.js';
+import { replaceExists } from './exists.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -125,7 +126,7 @@ export function replaceNode(
 			return replaceBlock(node, script);
 		}
 		case 'exists': {
-			throw new Error('Not implemented');
+			return replaceExists(node, script);
 		}
 		case 'tmpl': {
 			return replaceTmpl(node, script);

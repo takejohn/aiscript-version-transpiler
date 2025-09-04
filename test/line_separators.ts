@@ -213,6 +213,17 @@ test('return', () => {
 	transpileAndValidate(script, expected);
 });
 
+test('exists', () => {
+	const script = dedent`
+		exists
+		x
+	`;
+	const expected = dedent`
+		exists x
+	`;
+	transpileAndValidate(script, expected);
+});
+
 describe('for', () => {
 	describe('times', () => {
 		test('between for and times', () => {
