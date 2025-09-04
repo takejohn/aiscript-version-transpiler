@@ -49,10 +49,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { transpile } from 'aiscript-version-transpiler';
 import { Copy as CopyIcon } from 'lucide-vue-next';
 
+const STORAGE_KEY = 'aiscript-version-transpiler:input-script';
 const defaultInput = `/* Write your AiScript code here... */`;
 const input = ref<string>(defaultInput);
 const output = ref<string>('');
@@ -64,6 +65,7 @@ let toastTimer: number | null = null;
 
 // 入力変更時にリアルタイムで変換
 watch(input, (newVal) => {
+  localStorage.setItem(STORAGE_KEY, newVal);
   try {
     output.value = transpile(newVal);
     isError.value = false;
@@ -72,6 +74,13 @@ watch(input, (newVal) => {
     isError.value = true;
   }
 });
+
+onMounted(() => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved != null) {
+    input.value = saved;
+  }
+})
 
 // 出力をコピー
 const copyOutput = async () => {
