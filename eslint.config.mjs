@@ -26,4 +26,15 @@ export default defineConfig(
 		commaDangle: 'always-multiline',
 		severity: 'error',
 	}),
+	{
+		rules: {
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					args: 'all',
+					argsIgnorePattern: '^_',
+				},
+			],
+		},
+	},
 );

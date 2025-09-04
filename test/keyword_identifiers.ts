@@ -42,7 +42,7 @@ describe('conventional keywords', () => {
 });
 
 describe('identifiers', () => {
-	const cases = [
+	const identifierCases: readonly [string, string][] = [
 		// new keywords
 		['case', 'case_'],
 		['default', 'default_'],
@@ -83,49 +83,32 @@ describe('identifiers', () => {
 		['case_', 'case__'],
 	];
 
-	test.each(cases)('%s as reference', (keyword, identifier) => {
-		transpileAndValidate(keyword, identifier);
-	});
+	const scriptCases: readonly [string, (identifier: string) => string][] = [
+		['reference', (identifier: string) => identifier],
+		['immutable variable', (identifier: string) => `let ${identifier} = 0`],
+		['mutable variable', (identifier: string) => `var ${identifier} = 0`],
+		['function name', (identifier: string) => `@${identifier}() {}`],
+		['namespace', (identifier: string) => `:: ${identifier} { let a = 0 }`],
+		['namespace reference', (identifier: string) => `${identifier}:a`],
+		['namespace member reference', (identifier: string) => `Ns:${identifier}`],
+		['metadata name', (identifier: string) => `### ${identifier} {}`],
+		['for variable', (identifier: string) => `for let ${identifier}, 4 {}`],
+		['each variable', (identifier: string) => `each let ${identifier}, [] {}`],
+	];
 
-	test.each(cases)('%s as immutable variable', (keyword, identifier) => {
-		const script = `let ${keyword} = 0`;
-		const expected = `let ${identifier} = 0`;
-		transpileAndValidate(script, expected);
-	});
+	const cases = identifierCases.flatMap(
+		(identifierCase) => scriptCases.map(
+			(scriptCase) => [...identifierCase, ...scriptCase] as const,
+		),
+	);
 
-	test.each(cases)('%s as mutable variable', (keyword, identifier) => {
-		const script = `var ${keyword} = 0`;
-		const expected = `var ${identifier} = 0`;
-		transpileAndValidate(script, expected);
-	});
+	if (identifierCases.length * scriptCases.length !== cases.length) {
+		throw Error(`${identifierCases.length} * ${scriptCases.length} != ${cases.length}`);
+	}
 
-	test.each(cases)('%s as function name', (keyword, identifier) => {
-		const script = `@${keyword}() {}`;
-		const expected = `@${identifier}() {}`;
-		transpileAndValidate(script, expected);
-	});
-
-	test.each(cases)('%s as namespace', (keyword, identifier) => {
-		const script = `:: ${keyword} { let a = 0 }`;
-		const expected = `:: ${identifier} { let a = 0 }`;
-		transpileAndValidate(script, expected);
-	});
-
-	test.each(cases)('%s as namespace reference', (keyword, identifier) => {
-		const script = `${keyword}:a`;
-		const expected = `${identifier}:a`;
-		transpileAndValidate(script, expected);
-	});
-
-	test.each(cases)('%s as namespace member reference', (keyword, identifier) => {
-		const script = `Ns:${keyword}`;
-		const expected = `Ns:${identifier}`;
-		transpileAndValidate(script, expected);
-	});
-
-	test.each(cases)('%s as metadata name', (keyword, identifier) => {
-		const script = `### ${keyword} {}`;
-		const expected = `### ${identifier} {}`;
+	test.each(cases)('$0 as $2', (identifier, expectedIdentifier, _useCase, builder) => {
+		const script = builder(identifier);
+		const expected = builder(expectedIdentifier);
 		transpileAndValidate(script, expected);
 	});
 });

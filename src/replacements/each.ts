@@ -1,6 +1,6 @@
 import type { Ast } from 'aiscript@0.19.0';
 import { ReplacementsBuilder, requireLoc } from './main.js';
-import { findNonWhitespaceCharacter, replaceLineSeparators, strictIndexOf } from '../utils.js';
+import { findNonWhitespaceCharacter, replaceLineSeparators, replaceName, strictIndexOf } from '../utils.js';
 
 const KEYWORD_EACH = 'each';
 const KEYWORD_LET = 'let';
@@ -20,6 +20,8 @@ export function replaceEach(node: Ast.Each, script: string): string {
 	const letStart = strictIndexOf(script, KEYWORD_LET, headerStart);
 	const varStart = findNonWhitespaceCharacter(script, letStart + KEYWORD_LET.length);
 	builder.addReplacement(letStart + KEYWORD_LET.length, varStart - 1, replaceLineSeparators);
+
+	builder.addReplacement(varStart, varStart + node.var.length - 1, replaceName);
 
 	const itemsLoc = requireLoc(node.items);
 	const commaStart = strictIndexOf(script, COMMA, varStart + node.var.length);

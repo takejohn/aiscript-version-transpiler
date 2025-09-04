@@ -1,6 +1,6 @@
 import type { Ast } from 'aiscript@0.19.0';
 import { ReplacementsBuilder, requireLoc } from './main.js';
-import { findNonWhitespaceCharacter, replaceLineSeparators, strictIndexOf } from '../utils.js';
+import { findNonWhitespaceCharacter, replaceLineSeparators, replaceName, strictIndexOf } from '../utils.js';
 
 const FOR_KEYWORD = 'for';
 const LET_KEYWORD = 'let';
@@ -42,6 +42,8 @@ function replaceForRange(node: Ast.For, script: string): string {
 
 	const varStart = strictIndexOf(script, node.var, letStart + LET_KEYWORD.length);
 	builder.addReplacement(letStart + LET_KEYWORD.length, varStart - 1, replaceLineSeparators);
+
+	builder.addReplacement(varStart, varStart + node.var.length - 1, replaceName);
 
 	const tokenAfterVarStart = findNonWhitespaceCharacter(script, varStart + node.var.length);
 	builder.addReplacement(varStart + node.var.length, tokenAfterVarStart - 1, replaceLineSeparators);
