@@ -34,6 +34,19 @@ describe('namespace', () => {
 	});
 });
 
+test('meta', () => {
+	const script = dedent`
+		### Meta
+		{
+		}
+	`;
+	const expected = dedent`
+		### Meta {
+		}
+	`;
+	transpileAndValidate(script, expected);
+});
+
 describe('if', () => {
 	test('between if and cond', () => {
 		const script = dedent`

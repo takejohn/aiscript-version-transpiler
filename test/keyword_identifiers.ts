@@ -122,4 +122,10 @@ describe('identifiers', () => {
 		const expected = `Ns:${identifier}`;
 		transpileAndValidate(script, expected);
 	});
+
+	test.each(cases)('%s as metadata name', (keyword, identifier) => {
+		const script = `### ${keyword} {}`;
+		const expected = `### ${identifier} {}`;
+		transpileAndValidate(script, expected);
+	});
 });
