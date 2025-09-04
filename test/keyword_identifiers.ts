@@ -94,6 +94,9 @@ describe('identifiers', () => {
 		['metadata name', (identifier: string) => `### ${identifier} {}`],
 		['for variable', (identifier: string) => `for let ${identifier}, 4 {}`],
 		['each variable', (identifier: string) => `each let ${identifier}, [] {}`],
+		['assigned variable', (identifier: string) => `${identifier} = 0`],
+		['add-assigned variable', (identifier: string) => `${identifier} += 0`],
+		['sub-assigned variable', (identifier: string) => `${identifier} -= 0`],
 	];
 
 	const cases = identifierCases.flatMap(

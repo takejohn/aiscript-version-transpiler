@@ -12,6 +12,7 @@ import { replaceMeta } from './meta.js';
 import { replaceReturn } from './return.js';
 import { replaceEach } from './each.js';
 import { replaceLoop } from './loop.js';
+import { replaceAssign } from './assign.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -105,14 +106,10 @@ export function replaceNode(
 		case 'loop': {
 			return replaceLoop(node, script);
 		}
-		case 'assign': {
-			throw new Error('Not implemented');
-		}
-		case 'addAssign': {
-			throw new Error('Not implemented');
-		}
+		case 'assign':
+		case 'addAssign':
 		case 'subAssign': {
-			throw new Error('Not implemented');
+			return replaceAssign(node, script);
 		}
 		case 'if': {
 			return replaceIf(node, script);
