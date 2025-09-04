@@ -109,6 +109,36 @@ describe('if', () => {
 	});
 });
 
+describe('fn', () => {
+	describe('between arguments and body', () => {
+		test('with name', () => {
+			const script = dedent`
+				@f()
+				{
+				}
+			`;
+			const expected = dedent`
+				@f() {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('without name', () => {
+			const script = dedent`
+				@()
+				{
+				}
+			`;
+			const expected = dedent`
+				@() {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
+});
+
 describe('comments between', () => {
 	test('block comment', () => {
 		const script = dedent`
