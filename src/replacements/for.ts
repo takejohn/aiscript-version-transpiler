@@ -1,5 +1,5 @@
 import type { Ast } from 'aiscript@0.19.0';
-import { ReplacementsBuilder, requireLoc } from './main.js';
+import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { findNonWhitespaceCharacter, replaceLineSeparators, replaceName, strictIndexOf } from '../utils.js';
 
 const FOR_KEYWORD = 'for';
@@ -19,9 +19,9 @@ function replaceForTimes(node: Ast.For, script: string): string {
 	if (node.times == null) {
 		throw new TypeError('times should exist');
 	}
-	const loc = requireLoc(node);
-	const timesLoc = requireLoc(node.times);
-	const forLoc = requireLoc(node.for);
+	const loc = getActualLocation(node);
+	const timesLoc = getActualLocation(node.times);
+	const forLoc = getActualLocation(node.for);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	builder.addReplacement(loc.start + FOR_KEYWORD.length, timesLoc.start, replaceLineSeparators);
 	builder.addReplacement(timesLoc.end + 1, forLoc.start, replaceLineSeparators);
@@ -34,7 +34,7 @@ function replaceForRange(node: Ast.For, script: string): string {
 		throw new TypeError('var, from and to should exist');
 	}
 
-	const loc = requireLoc(node);
+	const loc = getActualLocation(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	const letStart = strictIndexOf(script, LET_KEYWORD, loc.start + FOR_KEYWORD.length);
@@ -48,10 +48,10 @@ function replaceForRange(node: Ast.For, script: string): string {
 	const tokenAfterVarStart = findNonWhitespaceCharacter(script, varStart + node.var.length);
 	builder.addReplacement(varStart + node.var.length, tokenAfterVarStart, replaceLineSeparators);
 
-	const toLoc = requireLoc(node.to);
+	const toLoc = getActualLocation(node.to);
 
 	if (script.startsWith(EQUAL_SIGN, tokenAfterVarStart)) {
-		const fromLoc = requireLoc(node.from);
+		const fromLoc = getActualLocation(node.from);
 		builder.addReplacement(tokenAfterVarStart + EQUAL_SIGN.length, fromLoc.start, replaceLineSeparators);
 
 		const commaStart = strictIndexOf(script, COMMA, fromLoc.end + 1);
@@ -62,7 +62,7 @@ function replaceForRange(node: Ast.For, script: string): string {
 		throw new TypeError('Unknown token');
 	}
 
-	const forLoc = requireLoc(node.for);
+	const forLoc = getActualLocation(node.for);
 	builder.addReplacement(toLoc.end + 1, forLoc.start, replaceLineSeparators);
 	builder.addNodeReplacement(node.for);
 	return builder.execute();

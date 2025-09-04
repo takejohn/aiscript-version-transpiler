@@ -27,7 +27,7 @@ export function replaceSlices(
 	let originalStart = 0;
 	for (const { start, end, content } of sortedReplacements) {
 		if (start < originalStart) {
-			throw new RangeError('Overlapping ranges are not allowed');
+			throw new RangeError(`Overlapping ranges are not allowed (${start} < ${originalStart})`);
 		}
 		result += string.slice(originalStart, start);
 		result += content;

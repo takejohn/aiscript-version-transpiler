@@ -1,5 +1,5 @@
 import { Ast } from 'aiscript@0.19.0';
-import { requireLoc } from './main.js';
+import { getActualLocation } from './main.js';
 import { replaceLineSeparators, strictIndexOf } from '../utils.js';
 import { ReplacementsBuilder } from './main.js';
 
@@ -8,10 +8,10 @@ const KEYWORD_ELIF = 'elif';
 const KEYWORD_ELSE = 'else';
 
 export function replaceIf(node: Ast.If, script: string): string {
-	const loc = requireLoc(node);
+	const loc = getActualLocation(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
-	const condLoc = requireLoc(node.cond);
-	const thenLoc = requireLoc(node.then);
+	const condLoc = getActualLocation(node.cond);
+	const thenLoc = getActualLocation(node.then);
 
 	builder.addReplacement(loc.start + KEYWORD_IF.length, condLoc.start, replaceLineSeparators);
 
@@ -19,17 +19,20 @@ export function replaceIf(node: Ast.If, script: string): string {
 	builder.addReplacement(condLoc.end + 1, thenLoc.start, replaceLineSeparators);
 	builder.addNodeReplacement(node.then);
 
+	let lastThenLoc = thenLoc;
 	for (const { cond: elseifCond, then: elseifThen } of node.elseif) {
 		const keywordElifStart = strictIndexOf(
 			script,
 			KEYWORD_ELIF,
-			thenLoc.end + 1,
+			lastThenLoc.end + 1,
 		);
-		const elseifCondLoc = requireLoc(elseifCond);
+		const elseifCondLoc = getActualLocation(elseifCond);
+		const elseifThenLoc = getActualLocation(elseifThen);
 		builder.addReplacement(keywordElifStart + KEYWORD_ELIF.length, elseifCondLoc.start, replaceLineSeparators);
 		builder.addNodeReplacement(elseifCond);
-		builder.addReplacement(elseifCondLoc.end + 1, requireLoc(elseifThen).start, replaceLineSeparators);
+		builder.addReplacement(elseifCondLoc.end + 1, elseifThenLoc.start, replaceLineSeparators);
 		builder.addNodeReplacement(elseifThen);
+		lastThenLoc = elseifThenLoc;
 	}
 
 	if (node.else != null) {
@@ -38,9 +41,9 @@ export function replaceIf(node: Ast.If, script: string): string {
 		const keywordElseStart = strictIndexOf(
 			script,
 			KEYWORD_ELSE,
-			requireLoc(lastThen).end + 1,
+			getActualLocation(lastThen).end + 1,
 		);
-		builder.addReplacement(keywordElseStart + KEYWORD_ELSE.length, requireLoc(node.else).start, replaceLineSeparators);
+		builder.addReplacement(keywordElseStart + KEYWORD_ELSE.length, getActualLocation(node.else).start, replaceLineSeparators);
 		builder.addNodeReplacement(node.else);
 	}
 

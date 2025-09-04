@@ -1,12 +1,12 @@
 import type { Ast } from 'aiscript@0.19.0';
-import { ReplacementsBuilder, requireLoc } from './main.js';
+import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { includesSeparator, replaceLineSeparators, strictIndexOf, strictLastIndexOf } from '../utils.js';
 
 const tmplEscapableChars = ['{', '}', '`'];
 const COLON = ':';
 
 export function replaceTmpl(node: Ast.Tmpl, script: string): string {
-	const loc = requireLoc(node);
+	const loc = getActualLocation(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	for (let i = 0; i < node.tmpl.length; i++) {
 		const element = node.tmpl[i]!;
@@ -37,11 +37,11 @@ function requireElementLoc(element: string | Ast.Expression): Ast.Loc {
 	if (typeof element !== 'object') {
 		throw new TypeError('Expected expression');
 	}
-	return requireLoc(element);
+	return getActualLocation(element);
 }
 
 export function replaceStr(node: Ast.Str, script: string): string {
-	const loc = requireLoc(node);
+	const loc = getActualLocation(node);
 	const quote = script.at(loc.start);
 	if (quote !== '\'' && quote !== '"') {
 		throw new TypeError(`Unknown quote character: ${quote}`);
@@ -87,12 +87,12 @@ function replaceStringContent(original: string, escapableChars: readonly string[
 }
 
 export function replaceObj(node: Ast.Obj, script: string): string {
-	const loc = requireLoc(node);
+	const loc = getActualLocation(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	let lastEnd: number | undefined;
 	for (const [key, value] of node.value) {
-		const valueLoc = requireLoc(value);
+		const valueLoc = getActualLocation(value);
 		const keyStart = strictLastIndexOf(script, key, valueLoc.start);
 		if (lastEnd != null && !includesSeparator(script, lastEnd, keyStart)) {
 			builder.addInsertion(lastEnd, ',');
@@ -114,12 +114,12 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 }
 
 export function replaceArr(node: Ast.Arr, script: string): string {
-	const loc = requireLoc(node);
+	const loc = getActualLocation(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	let lastEnd: number | undefined;
 	for (const item of node.value) {
-		const itemLoc = requireLoc(item);
+		const itemLoc = getActualLocation(item);
 		if (lastEnd != null && !includesSeparator(script, lastEnd, itemLoc.start)) {
 			builder.addInsertion(lastEnd, ',');
 		}

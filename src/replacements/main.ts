@@ -47,7 +47,7 @@ export class ReplacementsBuilder {
 	}
 
 	public addNodeReplacement(node: Ast.Node): void {
-		const loc = requireLoc(node);
+		const loc = getActualLocation(node);
 		this._addReplacement(
 			loc.start,
 			loc.end + 1,
@@ -81,7 +81,7 @@ export class ReplacementsBuilder {
 export function replaceAst(ast: Ast.Node[], script: string): string {
 	const replacements: readonly SliceReplacement[] = ast.map((node) => {
 		const content = replaceNode(node, script);
-		const { start, end } = requireLoc(node);
+		const { start, end } = getActualLocation(node);
 		return { start, end: end + 1, content };
 	}).filter((node): node is SliceReplacement => node !== null);
 	return replaceSlices(script, replacements);
@@ -144,7 +144,7 @@ export function replaceNode(
 		case 'num':
 		case 'bool':
 		case 'null': {
-			const loc = requireLoc(node);
+			const loc = getActualLocation(node);
 			return script.slice(loc.start, loc.end + 1);
 		}
 		case 'obj': {
@@ -185,9 +185,81 @@ export function replaceNode(
 	}
 }
 
-export function requireLoc(node: Ast.Node): Ast.Loc {
-	if (!node.loc) {
+export function getActualLocation(node: Ast.Node): Ast.Loc {
+	const loc = node.loc;
+	if (loc == null) {
 		throw new TypeError('node does not have loc');
 	}
-	return node.loc;
+
+	switch (node.type) {
+		case 'ns':
+		case 'meta':
+		case 'def':
+		case 'return':
+		case 'each':
+		case 'for':
+		case 'loop':
+		case 'break':
+		case 'continue':
+		case 'assign':
+		case 'addAssign':
+		case 'subAssign':
+		case 'if':
+		case 'fn':
+		case 'match':
+		case 'block':
+		case 'exists':
+		case 'tmpl':
+		case 'str':
+		case 'num':
+		case 'bool':
+		case 'null':
+		case 'obj':
+		case 'arr':
+		case 'not':
+		case 'identifier':
+		{
+			return loc;
+		}
+		case 'and':
+		case 'or': {
+			return {
+				start: getActualLocation(node.left).start,
+				end: loc.end,
+			};
+		}
+		case 'call': {
+			const targetLocation = getActualLocation(node.target);
+			const firstArg = node.args.at(0);
+			const lastArg = node.args.at(-1);
+			let start: number;
+			if (firstArg != null) {
+				start = Math.min(getActualLocation(firstArg).start, targetLocation.start);
+			} else {
+				start = targetLocation.start;
+			}
+			let end: number;
+			if (lastArg != null) {
+				end = Math.max(getActualLocation(lastArg).end, loc.end);
+			} else {
+				end = targetLocation.end;
+			}
+			return { start, end };
+		}
+		case 'index':
+		case 'prop': {
+			return {
+				start: getActualLocation(node.target).start,
+				end: loc.end,
+			};
+		}
+		case 'namedTypeSource':
+		case 'fnTypeSource': {
+			throw new Error('Not implemented');
+		}
+		default: {
+			const _node: never = node;
+			throw new TypeError(`Unknown node type ${(_node as Ast.Node).type}`);
+		}
+	}
 }

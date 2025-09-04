@@ -1,5 +1,5 @@
 import type { Ast } from 'aiscript@0.19.0';
-import { ReplacementsBuilder, requireLoc } from './main.js';
+import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { findNonWhitespaceCharacter, replaceLineSeparators, replaceName, strictIndexOf } from '../utils.js';
 
 const KEYWORD_EACH = 'each';
@@ -9,7 +9,7 @@ const RIGHT_PARENTHESIS = ')';
 const COMMA = ',';
 
 export function replaceEach(node: Ast.Each, script: string): string {
-	const loc = requireLoc(node);
+	const loc = getActualLocation(node);
 
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
@@ -23,7 +23,7 @@ export function replaceEach(node: Ast.Each, script: string): string {
 
 	builder.addReplacement(varStart, varStart + node.var.length, replaceName);
 
-	const itemsLoc = requireLoc(node.items);
+	const itemsLoc = getActualLocation(node.items);
 	const commaStart = strictIndexOf(script, COMMA, varStart + node.var.length);
 	builder.addReplacement(varStart + node.var.length, commaStart, replaceLineSeparators);
 

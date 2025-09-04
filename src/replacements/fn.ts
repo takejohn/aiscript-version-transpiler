@@ -1,5 +1,5 @@
 import type { Ast } from 'aiscript@0.19.0';
-import { ReplacementsBuilder, requireLoc } from './main.js';
+import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { replaceLineSeparators, replaceName, strictIndexOf } from '../utils.js';
 
 const AT_SIGN = '@';
@@ -8,7 +8,7 @@ const RIGHT_PARENTHESIS = ')';
 const LEFT_BRACE = '{';
 
 export function replaceFn(node: Ast.Fn, script: string, name?: string): string {
-	const loc = requireLoc(node);
+	const loc = getActualLocation(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	let argsStart: number;
 	if (name != null) {

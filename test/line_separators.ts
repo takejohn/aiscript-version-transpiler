@@ -166,6 +166,23 @@ describe('if', () => {
 		`;
 		transpileAndValidate(script, expected);
 	});
+
+	test('indented multiple elif', () => {
+		const script = dedent`
+			if (a == 1)
+				1
+			elif (a == 2)
+				2
+			elif (a == 3)
+				3
+		`;
+		const expected = dedent`
+			if (a == 1) 1
+			elif (a == 2) 2
+			elif (a == 3) 3
+		`;
+		transpileAndValidate(script, expected);
+	});
 });
 
 describe('fn', () => {

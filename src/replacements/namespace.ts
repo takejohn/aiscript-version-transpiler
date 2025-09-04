@@ -1,12 +1,12 @@
 import type { Ast } from 'aiscript@0.19.0';
-import { ReplacementsBuilder, requireLoc } from './main.js';
+import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { replaceLineSeparators, replaceName, strictIndexOf } from '../utils.js';
 
 const COLON2 = '::';
 const LEFT_BRACE = '{';
 
 export function replaceNamespace(node: Ast.Namespace, script: string): string {
-	const loc = requireLoc(node);
+	const loc = getActualLocation(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	const nameStart = strictIndexOf(script, node.name, loc.start + COLON2.length);
 	const nameEnd = nameStart + node.name.length;
