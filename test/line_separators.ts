@@ -577,6 +577,21 @@ describe('each', () => {
 	});
 });
 
+test('loop', () => {
+	const script = dedent`
+		loop
+		{
+			break
+		}
+	`;
+	const expected = dedent`
+		loop {
+			break
+		}
+	`;
+	transpileAndValidate(script, expected);
+});
+
 describe('comments between', () => {
 	test('block comment', () => {
 		const script = dedent`

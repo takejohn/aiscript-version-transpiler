@@ -11,6 +11,7 @@ import { replaceArr, replaceObj, replaceStr, replaceTmpl } from './literal.js';
 import { replaceMeta } from './meta.js';
 import { replaceReturn } from './return.js';
 import { replaceEach } from './each.js';
+import { replaceLoop } from './loop.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -102,7 +103,7 @@ export function replaceNode(
 			return replaceFor(node, script);
 		}
 		case 'loop': {
-			throw new Error('Not implemented');
+			return replaceLoop(node, script);
 		}
 		case 'assign': {
 			throw new Error('Not implemented');
