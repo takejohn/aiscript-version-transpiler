@@ -13,6 +13,7 @@ import { replaceReturn } from './return.js';
 import { replaceEach } from './each.js';
 import { replaceLoop } from './loop.js';
 import { replaceAssign } from './assign.js';
+import { replaceMatch } from './match.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -27,6 +28,10 @@ export class ReplacementsBuilder {
 		end: number,
 	) {
 		this.end = end + 1;
+	}
+
+	public addInsertion(position: number, content: string): void {
+		this._addReplacement(position, position, content);
 	}
 
 	public addReplacement(start: number, end: number, replaceFunc: (original: string) => string): void {
@@ -114,7 +119,7 @@ export function replaceNode(
 			return replaceFn(node, script);
 		}
 		case 'match': {
-			throw new Error('Not implemented');
+			return replaceMatch(node, script);
 		}
 		case 'block': {
 			return replaceBlock(node, script);
