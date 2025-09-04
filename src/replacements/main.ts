@@ -9,6 +9,7 @@ import { replaceBlock } from './block.js';
 import { replaceNamespace } from './namespace.js';
 import { replaceArr, replaceObj, replaceStr, replaceTmpl } from './literal.js';
 import { replaceMeta } from './meta.js';
+import { replaceReturn } from './return.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -91,7 +92,7 @@ export function replaceNode(
 			return replaceDefinition(node, script);
 		}
 		case 'return': {
-			throw new Error('Not implemented');
+			return replaceReturn(node, script);
 		}
 		case 'each': {
 			throw new Error('Not implemented');

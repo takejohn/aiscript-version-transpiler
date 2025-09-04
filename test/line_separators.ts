@@ -198,6 +198,21 @@ describe('fn', () => {
 	});
 });
 
+test('return', () => {
+	const script = dedent`
+		@() {
+			return
+			0
+		}
+	`;
+	const expected = dedent`
+		@() {
+			return 0
+		}
+	`;
+	transpileAndValidate(script, expected);
+});
+
 describe('for', () => {
 	test('between for and times', () => {
 		const script = dedent`
