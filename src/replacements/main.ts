@@ -17,6 +17,7 @@ import { replaceMatch } from './match.js';
 import { replaceExists } from './exists.js';
 import { replaceNot } from './not.js';
 import { replaceBinaryOperation } from './binaryOperation.js';
+import { replaceCall } from './call.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -161,7 +162,7 @@ export function replaceNode(
 			return replaceIdentifier(node);
 		}
 		case 'call': {
-			throw new Error('Not implemented');
+			return replaceCall(node, script);
 		}
 		case 'index': {
 			throw new Error('Not implemented');
