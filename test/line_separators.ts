@@ -2,6 +2,38 @@ import { dedent } from 'ts-dedent';
 import { transpileAndValidate } from './test_utils.js';
 import { describe, test } from 'vitest';
 
+describe('namespace', () => {
+	test('between :: and name', () => {
+		const script = dedent`
+			::
+			Ns {
+				let a = 0
+			}
+		`;
+		const expected = dedent`
+			:: Ns {
+				let a = 0
+			}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between name and body', () => {
+		const script = dedent`
+			:: Ns
+			{
+				let a = 0
+			}
+		`;
+		const expected = dedent`
+		:: Ns {
+			let a = 0
+		}
+		`;
+		transpileAndValidate(script, expected);
+	});
+});
+
 describe('if', () => {
 	test('between if and cond', () => {
 		const script = dedent`

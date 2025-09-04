@@ -6,6 +6,7 @@ import { replaceDefinition } from './definition.js';
 import { replaceFn } from './fn.js';
 import { replaceFor } from './for.js';
 import { replaceBlock } from './block.js';
+import { replaceNamespace } from './namespace.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -79,7 +80,7 @@ export function replaceNode(
 ): string {
 	switch (node.type) {
 		case 'ns': {
-			throw new Error('Not implemented');
+			return replaceNamespace(node, script);
 		}
 		case 'meta': {
 			throw new Error('Not implemented');

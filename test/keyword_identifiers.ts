@@ -104,4 +104,22 @@ describe('identifiers', () => {
 		const expected = `@${identifier}() {}`;
 		transpileAndValidate(script, expected);
 	});
+
+	test.each(cases)('%s as namespace', (keyword, identifier) => {
+		const script = `:: ${keyword} { let a = 0 }`;
+		const expected = `:: ${identifier} { let a = 0 }`;
+		transpileAndValidate(script, expected);
+	});
+
+	test.each(cases)('%s as namespace reference', (keyword, identifier) => {
+		const script = `${keyword}:a`;
+		const expected = `${identifier}:a`;
+		transpileAndValidate(script, expected);
+	});
+
+	test.each(cases)('%s as namespace member reference', (keyword, identifier) => {
+		const script = `Ns:${keyword}`;
+		const expected = `Ns:${identifier}`;
+		transpileAndValidate(script, expected);
+	});
 });

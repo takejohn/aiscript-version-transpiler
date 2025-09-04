@@ -173,6 +173,13 @@ const keywords: readonly string[] = [
 	'new',
 ];
 
+const COLON = ':';
+
+export function replaceNameWithNamespace(name: string): string {
+	const segments = name.split(COLON);
+	return segments.map(replaceName).join(COLON);
+}
+
 export function replaceName(name: string): string {
 	const suffixStart = getSuffixUnderscoresStart(name);
 	const base = name.slice(0, suffixStart);
