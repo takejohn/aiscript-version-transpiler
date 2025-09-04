@@ -9,8 +9,8 @@ export function replaceMeta(node: Ast.Meta, script: string): string {
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	if (node.name != null) {
 		const nameStart = strictIndexOf(script, node.name, loc.start + HASH3.length);
-		builder.addReplacement(nameStart, nameStart + node.name.length - 1, replaceName);
-		builder.addReplacement(nameStart + node.name.length, requireLoc(node.value).start - 1, replaceLineSeparators);
+		builder.addReplacement(nameStart, nameStart + node.name.length, replaceName);
+		builder.addReplacement(nameStart + node.name.length, requireLoc(node.value).start, replaceLineSeparators);
 	}
 	builder.addNodeReplacement(node.value);
 	return builder.execute();

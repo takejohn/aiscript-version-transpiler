@@ -13,15 +13,15 @@ export function replaceFn(node: Ast.Fn, script: string, name?: string): string {
 	let argsStart: number;
 	if (name != null) {
 		const nameStart = strictIndexOf(script, name, loc.start + AT_SIGN.length);
-		const nameEnd = nameStart + name.length - 1;
+		const nameEnd = nameStart + name.length;
 		builder.addReplacement(nameStart, nameEnd, replaceName);
-		argsStart = strictIndexOf(script, LEFT_PARENTHESIS, nameEnd + 1);
+		argsStart = strictIndexOf(script, LEFT_PARENTHESIS, nameEnd);
 	} else {
 		argsStart = strictIndexOf(script, LEFT_PARENTHESIS, loc.start + AT_SIGN.length);
 	}
 	const argsEnd = getArgsEnd(script, argsStart, loc.end);
 	const bodyStart = strictIndexOf(script, LEFT_BRACE, argsEnd + 1);
-	builder.addReplacement(argsEnd + 1, bodyStart - 1, replaceLineSeparators);
+	builder.addReplacement(argsEnd + 1, bodyStart, replaceLineSeparators);
 	builder.addNodeReplacements(node.children);
 	return builder.execute();
 }

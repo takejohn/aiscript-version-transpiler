@@ -24,7 +24,7 @@ function replaceVarDef(node: Ast.Definition, script: string): string {
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	const keyword = node.mut ? VAR_KEYWORD : LET_KEYWORD;
 	const nameStart = strictIndexOf(script, node.name, loc.start + keyword.length);
-	builder.addReplacement(nameStart, nameStart + node.name.length - 1, replaceName);
+	builder.addReplacement(nameStart, nameStart + node.name.length, replaceName);
 	builder.addNodeReplacement(node.expr);
 	return builder.execute();
 }

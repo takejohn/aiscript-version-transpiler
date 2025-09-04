@@ -6,8 +6,8 @@ describe('replaceSlices', () => {
 	test('valid', () => {
 		const input = 'Ai is cute';
 		const replacements = [
-			{ start: 3, end: 4, content: 'am' },
-			{ start: 6, end: 9, content: 'kawaii' },
+			{ start: 3, end: 5, content: 'am' },
+			{ start: 6, end: 10, content: 'kawaii' },
 		] as const satisfies readonly SliceReplacement[];
 		const output = replaceSlices(input, replacements);
 		expect(output).toBe('Ai am kawaii');
@@ -23,8 +23,8 @@ describe('replaceSlices', () => {
 	test('adjacent ranges', () => {
 		const input = 'abcde';
 		const replacements = [
-			{ start: 1, end: 2, content: 'X' },
-			{ start: 3, end: 3, content: 'Y' },
+			{ start: 1, end: 3, content: 'X' },
+			{ start: 3, end: 4, content: 'Y' },
 		] as const satisfies readonly SliceReplacement[];
 		const output = replaceSlices(input, replacements);
 		expect(output).toBe('aXYe');
@@ -33,8 +33,8 @@ describe('replaceSlices', () => {
 	test('overlapping ranges', () => {
 		const input = 'abcde';
 		const replacement = [
-			{ start: 1, end: 2, content: 'X' },
-			{ start: 2, end: 3, content: 'Y' },
+			{ start: 1, end: 3, content: 'X' },
+			{ start: 2, end: 4, content: 'Y' },
 		] as const satisfies readonly SliceReplacement[];
 		expect(() => replaceSlices(input, replacement)).toThrow(RangeError);
 	});

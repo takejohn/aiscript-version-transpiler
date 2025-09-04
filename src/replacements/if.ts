@@ -13,18 +13,10 @@ export function replaceIf(node: Ast.If, script: string): string {
 	const condLoc = requireLoc(node.cond);
 	const thenLoc = requireLoc(node.then);
 
-	builder.addReplacement(
-		loc.start + KEYWORD_IF.length,
-		condLoc.start - 1,
-		replaceLineSeparators,
-	);
+	builder.addReplacement(loc.start + KEYWORD_IF.length, condLoc.start, replaceLineSeparators);
 
 	builder.addNodeReplacement(node.cond);
-	builder.addReplacement(
-		condLoc.end + 1,
-		thenLoc.start - 1,
-		replaceLineSeparators,
-	);
+	builder.addReplacement(condLoc.end + 1, thenLoc.start, replaceLineSeparators);
 	builder.addNodeReplacement(node.then);
 
 	for (const { cond: elseifCond, then: elseifThen } of node.elseif) {
@@ -34,17 +26,9 @@ export function replaceIf(node: Ast.If, script: string): string {
 			thenLoc.end + 1,
 		);
 		const elseifCondLoc = requireLoc(elseifCond);
-		builder.addReplacement(
-			keywordElifStart + KEYWORD_ELIF.length,
-			elseifCondLoc.start - 1,
-			replaceLineSeparators,
-		);
+		builder.addReplacement(keywordElifStart + KEYWORD_ELIF.length, elseifCondLoc.start, replaceLineSeparators);
 		builder.addNodeReplacement(elseifCond);
-		builder.addReplacement(
-			elseifCondLoc.end + 1,
-			requireLoc(elseifThen).start - 1,
-			replaceLineSeparators,
-		);
+		builder.addReplacement(elseifCondLoc.end + 1, requireLoc(elseifThen).start, replaceLineSeparators);
 		builder.addNodeReplacement(elseifThen);
 	}
 
@@ -56,11 +40,7 @@ export function replaceIf(node: Ast.If, script: string): string {
 			KEYWORD_ELSE,
 			requireLoc(lastThen).end + 1,
 		);
-		builder.addReplacement(
-			keywordElseStart + KEYWORD_ELSE.length,
-			requireLoc(node.else).start - 1,
-			replaceLineSeparators,
-		);
+		builder.addReplacement(keywordElseStart + KEYWORD_ELSE.length, requireLoc(node.else).start, replaceLineSeparators);
 		builder.addNodeReplacement(node.else);
 	}
 

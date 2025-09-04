@@ -8,7 +8,7 @@ export function replaceLoop(node: Ast.Loop, script: string): string {
 	const loc = requireLoc(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	const bodyStart = findNonWhitespaceCharacter(script, loc.start + LOOP_KEYWORD.length);
-	builder.addReplacement(loc.start + LOOP_KEYWORD.length, bodyStart - 1, replaceLineSeparators);
+	builder.addReplacement(loc.start + LOOP_KEYWORD.length, bodyStart, replaceLineSeparators);
 	builder.addNodeReplacements(node.statements);
 	return builder.execute();
 }

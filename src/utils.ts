@@ -13,7 +13,7 @@ const SPACE_CHARS = /[ \t]/;
  * @param string - The original string to perform replacements on.
  * @param replacements - An array of replacement objects, each containing
  *   `start`, `end`, and `content` properties.
- *   `start` and `end` are inclusive indices.
+ *   `end` is an exclusive index.
  * @returns The modified string with all replacements applied.
  * @throws {RangeError} If any of the replacement ranges overlap.
  */
@@ -31,19 +31,11 @@ export function replaceSlices(
 		}
 		result += string.slice(originalStart, start);
 		result += content;
-		originalStart = end + 1;
+		originalStart = end;
 	}
 	result += string.slice(originalStart);
 
 	return result;
-}
-
-export function sliceInclusive(
-	string: string,
-	start: number,
-	end: number,
-): string {
-	return string.slice(start, end + 1);
 }
 
 export function strictIndexOf(

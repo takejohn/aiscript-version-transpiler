@@ -9,11 +9,11 @@ export function replaceNamespace(node: Ast.Namespace, script: string): string {
 	const loc = requireLoc(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	const nameStart = strictIndexOf(script, node.name, loc.start + COLON2.length);
-	const nameEnd = nameStart + node.name.length - 1;
+	const nameEnd = nameStart + node.name.length;
 	const bodyStart = strictIndexOf(script, LEFT_BRACE, nameEnd + 1);
-	builder.addReplacement(loc.start + COLON2.length, nameStart - 1, replaceLineSeparators);
+	builder.addReplacement(loc.start + COLON2.length, nameStart, replaceLineSeparators);
 	builder.addReplacement(nameStart, nameEnd, replaceName);
-	builder.addReplacement(nameEnd + 1, bodyStart, replaceLineSeparators);
+	builder.addReplacement(nameEnd, bodyStart, replaceLineSeparators);
 	builder.addNodeReplacements(node.members);
 	return builder.execute();
 }

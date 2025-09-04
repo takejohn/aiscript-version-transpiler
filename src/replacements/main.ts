@@ -1,5 +1,5 @@
 import { Ast } from 'aiscript@0.19.0';
-import { replaceSlices, sliceInclusive, type SliceReplacement } from '../utils.js';
+import { replaceSlices, type SliceReplacement } from '../utils.js';
 import { replaceIf } from './if.js';
 import { replaceIdentifier } from './identifier.js';
 import { replaceDefinition } from './definition.js';
@@ -19,21 +19,18 @@ export class ReplacementsBuilder {
 
 	private endOffset = 0;
 
+	private end: number;
+
 	public constructor(
 		private script: string,
 		private start: number,
-		private end: number,
-	) {}
-
-	/**
-	 * `start` and `end` are inclusive indices.
-	 */
-	public addReplacement(
-		start: number,
 		end: number,
-		replaceFunc: (original: string) => string,
-	): void {
-		const original = sliceInclusive(this.script, start, end);
+	) {
+		this.end = end + 1;
+	}
+
+	public addReplacement(start: number, end: number, replaceFunc: (original: string) => string): void {
+		const original = this.script.slice(start, end);
 		const content = replaceFunc(original);
 		this._addReplacement(start, end, content);
 	}
@@ -42,7 +39,7 @@ export class ReplacementsBuilder {
 		const loc = requireLoc(node);
 		this._addReplacement(
 			loc.start,
-			loc.end,
+			loc.end + 1,
 			replaceNode(node, this.script),
 		);
 	}
@@ -54,8 +51,7 @@ export class ReplacementsBuilder {
 	}
 
 	public execute(): string {
-		return sliceInclusive(
-			replaceSlices(this.script, this.replacements),
+		return replaceSlices(this.script, this.replacements).slice(
 			this.start,
 			this.end + this.endOffset,
 		);
@@ -67,7 +63,7 @@ export class ReplacementsBuilder {
 		content: string,
 	): void {
 		this.replacements.push({ start, end, content });
-		this.endOffset += content.length - (end - start + 1);
+		this.endOffset += content.length - (end - start);
 	}
 }
 
@@ -75,7 +71,7 @@ export function replaceAst(ast: Ast.Node[], script: string): string {
 	const replacements: readonly SliceReplacement[] = ast.map((node) => {
 		const content = replaceNode(node, script);
 		const { start, end } = requireLoc(node);
-		return { start, end, content };
+		return { start, end: end + 1, content };
 	}).filter((node): node is SliceReplacement => node !== null);
 	return replaceSlices(script, replacements);
 }
@@ -138,7 +134,7 @@ export function replaceNode(
 		case 'bool':
 		case 'null': {
 			const loc = requireLoc(node);
-			return sliceInclusive(script, loc.start, loc.end);
+			return script.slice(loc.start, loc.end + 1);
 		}
 		case 'obj': {
 			return replaceObj(node, script);

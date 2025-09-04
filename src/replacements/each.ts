@@ -15,19 +15,19 @@ export function replaceEach(node: Ast.Each, script: string): string {
 
 	const headerStart = findNonWhitespaceCharacter(script, loc.start + KEYWORD_EACH.length);
 	const hasParentheses = script[headerStart] === LEFT_PARENTHESIS;
-	builder.addReplacement(loc.start + KEYWORD_EACH.length, headerStart - 1, replaceLineSeparators);
+	builder.addReplacement(loc.start + KEYWORD_EACH.length, headerStart, replaceLineSeparators);
 
 	const letStart = strictIndexOf(script, KEYWORD_LET, headerStart);
 	const varStart = findNonWhitespaceCharacter(script, letStart + KEYWORD_LET.length);
-	builder.addReplacement(letStart + KEYWORD_LET.length, varStart - 1, replaceLineSeparators);
+	builder.addReplacement(letStart + KEYWORD_LET.length, varStart, replaceLineSeparators);
 
-	builder.addReplacement(varStart, varStart + node.var.length - 1, replaceName);
+	builder.addReplacement(varStart, varStart + node.var.length, replaceName);
 
 	const itemsLoc = requireLoc(node.items);
 	const commaStart = strictIndexOf(script, COMMA, varStart + node.var.length);
-	builder.addReplacement(varStart + node.var.length, commaStart - 1, replaceLineSeparators);
+	builder.addReplacement(varStart + node.var.length, commaStart, replaceLineSeparators);
 
-	builder.addReplacement(commaStart + COMMA.length, itemsLoc.start - 1, replaceLineSeparators);
+	builder.addReplacement(commaStart + COMMA.length, itemsLoc.start, replaceLineSeparators);
 
 	let bodyStart: number;
 	if (hasParentheses) {

@@ -24,7 +24,7 @@ export function replaceTmpl(node: Ast.Tmpl, script: string): string {
 			} else {
 				end = loc.end;
 			}
-			builder.addReplacement(start, end, (original) => replaceStringContent(original, tmplEscapableChars));
+			builder.addReplacement(start, end + 1, (original) => replaceStringContent(original, tmplEscapableChars));
 		} else {
 			builder.addNodeReplacement(element);
 		}
@@ -46,7 +46,7 @@ export function replaceStr(node: Ast.Str, script: string): string {
 		throw new TypeError(`Unknown quote character: ${quote}`);
 	}
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
-	builder.addReplacement(loc.start + 1, loc.end - 1, (original) => replaceStringContent(original, [quote]));
+	builder.addReplacement(loc.start + 1, loc.end, (original) => replaceStringContent(original, [quote]));
 	return builder.execute();
 }
 
