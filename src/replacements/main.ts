@@ -15,6 +15,7 @@ import { replaceLoop } from './loop.js';
 import { replaceAssign } from './assign.js';
 import { replaceMatch } from './match.js';
 import { replaceExists } from './exists.js';
+import { replaceNot } from './not.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -149,7 +150,7 @@ export function replaceNode(
 			return replaceArr(node, script);
 		}
 		case 'not': {
-			throw new Error('Not implemented');
+			return replaceNot(node, script);
 		}
 		case 'and': {
 			throw new Error('Not implemented');
