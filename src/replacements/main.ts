@@ -7,6 +7,7 @@ import { replaceFn } from './fn.js';
 import { replaceFor } from './for.js';
 import { replaceBlock } from './block.js';
 import { replaceNamespace } from './namespace.js';
+import { replaceArr, replaceObj, replaceStr, replaceTmpl } from './literal.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -41,7 +42,7 @@ export class ReplacementsBuilder {
 		);
 	}
 
-	public addNodeReplacements(nodes: Ast.Node[]): void {
+	public addNodeReplacements(nodes: Iterable<Ast.Node>): void {
 		for (const node of nodes) {
 			this.addNodeReplacement(node);
 		}
@@ -125,10 +126,10 @@ export function replaceNode(
 			throw new Error('Not implemented');
 		}
 		case 'tmpl': {
-			throw new Error('Not implemented');
+			return replaceTmpl(node, script);
 		}
 		case 'str': {
-			throw new Error('Not implemented');
+			return replaceStr(node, script);
 		}
 		case 'break':
 		case 'continue':
@@ -139,10 +140,10 @@ export function replaceNode(
 			return sliceInclusive(script, loc.start, loc.end);
 		}
 		case 'obj': {
-			throw new Error('Not implemented');
+			return replaceObj(node, script);
 		}
 		case 'arr': {
-			throw new Error('Not implemented');
+			return replaceArr(node, script);
 		}
 		case 'not': {
 			throw new Error('Not implemented');

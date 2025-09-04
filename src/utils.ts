@@ -55,6 +55,18 @@ export function strictIndexOf(
 	return result;
 }
 
+export function strictLastIndexOf(
+	string: string,
+	searchString: string,
+	position?: number,
+): number {
+	const result = string.lastIndexOf(searchString, position);
+	if (result < 0) {
+		throw new TypeError(`String '${searchString}' not found`);
+	}
+	return result;
+}
+
 const LINE_SEPARATORS = /[\n\r]/;
 const SPACE_CHARS = /[ \t]/;
 
