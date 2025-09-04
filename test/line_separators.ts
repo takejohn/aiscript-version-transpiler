@@ -214,92 +214,254 @@ test('return', () => {
 });
 
 describe('for', () => {
-	test('between for and times', () => {
-		const script = dedent`
-			for
-			4 {}
-		`;
-		const expected = dedent`
-			for 4 {}
-		`;
-		transpileAndValidate(script, expected);
+	describe('times', () => {
+		test('between for and times', () => {
+			const script = dedent`
+				for
+				4 {}
+			`;
+			const expected = dedent`
+				for 4 {}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between for and times with parentheses', () => {
+			const script = dedent`
+				for
+				(4) {}
+			`;
+			const expected = dedent`
+				for (4) {}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between times and body', () => {
+			const script = dedent`
+				for 4
+				{}
+			`;
+			const expected = dedent`
+				for 4 {}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between times with parentheses and body', () => {
+			const script = dedent`
+				for (4)
+				{}
+			`;
+			const expected = dedent`
+				for (4) {}
+			`;
+			transpileAndValidate(script, expected);
+		});
 	});
 
-	test('between for and times with parentheses', () => {
-		const script = dedent`
-			for
-			(4) {}
-		`;
-		const expected = dedent`
-			for (4) {}
-		`;
-		transpileAndValidate(script, expected);
-	});
+	describe('range', () => {
+		describe('without from', () => {
+			test('between variable and equal', () => {
+				const script = dedent`
+					for let i
+					= 0, 4 {}
+				`;
+				const expected = dedent`
+					for let i = 0, 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
 
-	test('between times and body', () => {
-		const script = dedent`
-			for 4
-			{}
-		`;
-		const expected = dedent`
-			for 4 {}
-		`;
-		transpileAndValidate(script, expected);
-	});
+			test('between variable and equal with parentheses', () => {
+				const script = dedent`
+					for (let i
+					= 0, 4) {}
+				`;
+				const expected = dedent`
+					for (let i = 0, 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
 
-	test('between times with parentheses and body', () => {
-		const script = dedent`
-			for (4)
-			{}
-		`;
-		const expected = dedent`
-			for (4) {}
-		`;
-		transpileAndValidate(script, expected);
-	});
+			test('between equal and expression', () => {
+				const script = dedent`
+					for let i =
+					0, 4 {}
+				`;
+				const expected = dedent`
+					for let i = 0, 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
 
-	test('between range and let', () => {
-		const script = dedent`
-			for
-			let i, 4 {}
-		`;
-		const expected = dedent`
-			for let i, 4 {}
-		`;
-		transpileAndValidate(script, expected);
-	});
+			test('between equal and expression with parentheses', () => {
+				const script = dedent`
+					for (let i =
+					0, 4) {}
+				`;
+				const expected = dedent`
+					for (let i = 0, 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
 
-	test('between for and range with parentheses', () => {
-		const script = dedent`
-			for
-			(let i, 4) {}
-		`;
-		const expected = dedent`
-			for (let i, 4) {}
-		`;
-		transpileAndValidate(script, expected);
-	});
+			test('between comma and to', () => {
+				const script = dedent`
+					for let i = 0,
+					4 {}
+				`;
+				const expected = dedent`
+					for let i = 0, 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
 
-	test('between range and body', () => {
-		const script = dedent`
-			for let i, 4
-			{}
-		`;
-		const expected = dedent`
-			for let i, 4 {}
-		`;
-		transpileAndValidate(script, expected);
-	});
+			test('between comma and to with parentheses', () => {
+				const script = dedent`
+					for (let i = 0,
+					4) {}
+				`;
+				const expected = dedent`
+					for (let i = 0, 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
 
-	test('between range with parentheses and body', () => {
-		const script = dedent`
-			for (let i, 4)
-			{}
-		`;
-		const expected = dedent`
-			for (let i, 4) {}
-		`;
-		transpileAndValidate(script, expected);
+			test('between range and body', () => {
+				const script = dedent`
+					for let i = 0, 4
+					{}
+				`;
+				const expected = dedent`
+					for let i = 0, 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between range with parentheses and body', () => {
+				const script = dedent`
+					for (let i = 0, 4)
+					{}
+				`;
+				const expected = dedent`
+					for (let i = 0, 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+		});
+
+		describe('with from', () => {
+			test('between for and range', () => {
+				const script = dedent`
+					for
+					let i, 4 {}
+				`;
+				const expected = dedent`
+					for let i, 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between for and range with parentheses', () => {
+				const script = dedent`
+					for
+					(let i, 4) {}
+				`;
+				const expected = dedent`
+					for (let i, 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between let and variable', () => {
+				const script = dedent`
+					for let
+					i, 4 {}
+				`;
+				const expected = dedent`
+					for let i, 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between let and variable with parentheses', () => {
+				const script = dedent`
+					for (let
+					i, 4) {}
+				`;
+				const expected = dedent`
+					for (let i, 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between variable and comma', () => {
+				const script = dedent`
+					for let i
+					, 4 {}
+				`;
+				const expected = dedent`
+					for let i , 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between variable and comma with parentheses', () => {
+				const script = dedent`
+					for (let i
+					, 4) {}
+				`;
+				const expected = dedent`
+					for (let i , 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between comma and to', () => {
+				const script = dedent`
+					for let i,
+					4 {}
+				`;
+				const expected = dedent`
+					for let i, 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between comma and to with parentheses', () => {
+				const script = dedent`
+					for (let i,
+					4) {}
+				`;
+				const expected = dedent`
+					for (let i, 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between range and body', () => {
+				const script = dedent`
+					for let i, 4
+					{}
+				`;
+				const expected = dedent`
+					for let i, 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between range with parentheses and body', () => {
+				const script = dedent`
+					for (let i, 4)
+					{}
+				`;
+				const expected = dedent`
+					for (let i, 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+		});
 	});
 });
 
