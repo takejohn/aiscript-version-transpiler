@@ -2,6 +2,8 @@ import { Ast } from 'aiscript@0.19.0';
 import { replaceSlices, sliceInclusive, type SliceReplacement } from '../utils.js';
 import { replaceIf } from './if.js';
 import { replaceIdentifier } from './identifier.js';
+import { replaceDefinition } from './definition.js';
+import { replaceFn } from './fn.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -36,6 +38,12 @@ export class ReplacementsBuilder {
 		);
 	}
 
+	public addNodeReplacements(nodes: Ast.Node[]): void {
+		for (const node of nodes) {
+			this.addNodeReplacement(node);
+		}
+	}
+
 	public execute(): string {
 		return sliceInclusive(
 			replaceSlices(this.script, this.replacements),
@@ -66,7 +74,7 @@ export function replaceRecursive(
 			throw new Error('Not implemented');
 		}
 		case 'def': {
-			throw new Error('Not implemented');
+			return replaceDefinition(node, script);
 		}
 		case 'return': {
 			throw new Error('Not implemented');
@@ -99,7 +107,7 @@ export function replaceRecursive(
 			return replaceIf(node, script);
 		}
 		case 'fn': {
-			throw new Error('Not implemented');
+			return replaceFn(node, script);
 		}
 		case 'match': {
 			throw new Error('Not implemented');

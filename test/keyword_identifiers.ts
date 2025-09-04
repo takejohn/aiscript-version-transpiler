@@ -82,7 +82,26 @@ describe('identifiers', () => {
 		['foo_', 'foo_'],
 		['case_', 'case__'],
 	];
-	test.each(cases)('%s as variable', (keyword, identifier) => {
+
+	test.each(cases)('%s as reference', (keyword, identifier) => {
 		transpileAndValidate(keyword, identifier);
+	});
+
+	test.each(cases)('%s as immutable variable', (keyword, identifier) => {
+		const script = `let ${keyword} = 0`;
+		const expected = `let ${identifier} = 0`;
+		transpileAndValidate(script, expected);
+	});
+
+	test.each(cases)('%s as mutable variable', (keyword, identifier) => {
+		const script = `var ${keyword} = 0`;
+		const expected = `var ${identifier} = 0`;
+		transpileAndValidate(script, expected);
+	});
+
+	test.each(cases)('%s as function name', (keyword, identifier) => {
+		const script = `@${keyword}() {}`;
+		const expected = `@${identifier}() {}`;
+		transpileAndValidate(script, expected);
 	});
 });
