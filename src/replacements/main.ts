@@ -4,6 +4,8 @@ import { replaceIf } from './if.js';
 import { replaceIdentifier } from './identifier.js';
 import { replaceDefinition } from './definition.js';
 import { replaceFn } from './fn.js';
+import { replaceFor } from './for.js';
+import { replaceBlock } from './block.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -34,7 +36,7 @@ export class ReplacementsBuilder {
 		this._addReplacement(
 			loc.start,
 			loc.end,
-			replaceRecursive(node, this.script),
+			replaceNode(node, this.script),
 		);
 	}
 
@@ -62,7 +64,16 @@ export class ReplacementsBuilder {
 	}
 }
 
-export function replaceRecursive(
+export function replaceAst(ast: Ast.Node[], script: string): string {
+	const replacements: readonly SliceReplacement[] = ast.map((node) => {
+		const content = replaceNode(node, script);
+		const { start, end } = requireLoc(node);
+		return { start, end, content };
+	}).filter((node): node is SliceReplacement => node !== null);
+	return replaceSlices(script, replacements);
+}
+
+export function replaceNode(
 	node: Ast.Node,
 	script: string,
 ): string {
@@ -83,7 +94,7 @@ export function replaceRecursive(
 			throw new Error('Not implemented');
 		}
 		case 'for': {
-			throw new Error('Not implemented');
+			return replaceFor(node, script);
 		}
 		case 'loop': {
 			throw new Error('Not implemented');
@@ -107,7 +118,7 @@ export function replaceRecursive(
 			throw new Error('Not implemented');
 		}
 		case 'block': {
-			throw new Error('Not implemented');
+			return replaceBlock(node, script);
 		}
 		case 'exists': {
 			throw new Error('Not implemented');

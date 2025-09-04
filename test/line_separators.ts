@@ -139,6 +139,96 @@ describe('fn', () => {
 	});
 });
 
+describe('for', () => {
+	test('between for and times', () => {
+		const script = dedent`
+			for
+			4 {}
+		`;
+		const expected = dedent`
+			for 4 {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between for and times with parentheses', () => {
+		const script = dedent`
+			for
+			(4) {}
+		`;
+		const expected = dedent`
+			for (4) {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between times and body', () => {
+		const script = dedent`
+			for 4
+			{}
+		`;
+		const expected = dedent`
+			for 4 {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between times with parentheses and body', () => {
+		const script = dedent`
+			for (4)
+			{}
+		`;
+		const expected = dedent`
+			for (4) {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between range and let', () => {
+		const script = dedent`
+			for
+			let i, 4 {}
+		`;
+		const expected = dedent`
+			for let i, 4 {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between for and range with parentheses', () => {
+		const script = dedent`
+			for
+			(let i, 4) {}
+		`;
+		const expected = dedent`
+			for (let i, 4) {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between range and body', () => {
+		const script = dedent`
+			for let i, 4
+			{}
+		`;
+		const expected = dedent`
+			for let i, 4 {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between range with parentheses and body', () => {
+		const script = dedent`
+			for (let i, 4)
+			{}
+		`;
+		const expected = dedent`
+			for (let i, 4) {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+});
+
 describe('comments between', () => {
 	test('block comment', () => {
 		const script = dedent`
