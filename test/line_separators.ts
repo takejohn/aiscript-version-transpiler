@@ -224,6 +224,38 @@ test('exists', () => {
 	transpileAndValidate(script, expected);
 });
 
+describe('obj', () => {
+	test('between key and colon', () => {
+		const script = dedent`
+			{
+				a:
+				0
+			}
+		`;
+		const expected = dedent`
+			{
+				a: 0
+			}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between colon and value', () => {
+		const script = dedent`
+			{
+				a
+				: 0
+			}
+		`;
+		const expected = dedent`
+			{
+				a : 0
+			}
+		`;
+		transpileAndValidate(script, expected);
+	});
+});
+
 describe('for', () => {
 	describe('times', () => {
 		test('between for and times', () => {

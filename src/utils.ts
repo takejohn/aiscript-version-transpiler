@@ -153,6 +153,16 @@ export function replaceLineSeparators(string: string): string {
 	return result;
 }
 
+export function includesSeparator(string: string, start = 0, end = string.length): boolean {
+	for (let i = start; i < end; i++) {
+		const char = string[i]!;
+		if (LINE_SEPARATORS.test(char) || char === ',') {
+			return true;
+		}
+	}
+	return false;
+}
+
 const keywords: readonly string[] = [
 	'case',
 	'default',

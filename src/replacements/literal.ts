@@ -1,8 +1,9 @@
 import type { Ast } from 'aiscript@0.19.0';
 import { ReplacementsBuilder, requireLoc } from './main.js';
-import { strictIndexOf, strictLastIndexOf } from '../utils.js';
+import { includesSeparator, replaceLineSeparators, strictIndexOf, strictLastIndexOf } from '../utils.js';
 
 const tmplEscapableChars = ['{', '}', '`'];
+const COLON = ':';
 
 export function replaceTmpl(node: Ast.Tmpl, script: string): string {
 	const loc = requireLoc(node);
@@ -88,13 +89,43 @@ function replaceStringContent(original: string, escapableChars: readonly string[
 export function replaceObj(node: Ast.Obj, script: string): string {
 	const loc = requireLoc(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
-	builder.addNodeReplacements(node.value.values());
+
+	let lastEnd: number | undefined;
+	for (const [key, value] of node.value) {
+		const valueLoc = requireLoc(value);
+		const keyStart = strictLastIndexOf(script, key, valueLoc.start);
+		if (lastEnd != null && !includesSeparator(script, lastEnd, keyStart)) {
+			builder.addInsertion(lastEnd, ',');
+		}
+
+		const keyEnd = keyStart + key.length;
+		const colonStart = strictIndexOf(script, COLON, keyEnd);
+		builder.addReplacement(keyEnd, colonStart, replaceLineSeparators);
+
+		const colonEnd = colonStart + COLON.length;
+		builder.addReplacement(colonEnd, valueLoc.start, replaceLineSeparators);
+
+		builder.addNodeReplacement(value);
+
+		lastEnd = valueLoc.end + 1;
+	}
+
 	return builder.execute();
 }
 
 export function replaceArr(node: Ast.Arr, script: string): string {
 	const loc = requireLoc(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
-	builder.addNodeReplacements(node.value);
+
+	let lastEnd: number | undefined;
+	for (const item of node.value) {
+		const itemLoc = requireLoc(item);
+		if (lastEnd != null && !includesSeparator(script, lastEnd, itemLoc.start)) {
+			builder.addInsertion(lastEnd, ',');
+		}
+		builder.addNodeReplacement(item);
+		lastEnd = itemLoc.end + 1;
+	}
+
 	return builder.execute();
 }

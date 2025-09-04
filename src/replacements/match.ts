@@ -1,10 +1,9 @@
 import type { Ast } from 'aiscript@0.19.0';
 import { ReplacementsBuilder, requireLoc } from './main.js';
-import { findNonWhitespaceCharacter, replaceLineSeparators, strictLastIndexOf } from '../utils.js';
+import { includesSeparator, findNonWhitespaceCharacter, replaceLineSeparators, strictLastIndexOf } from '../utils.js';
 
 const MATCH_KEYWORD = 'match';
 const ASTERISK = '*';
-const SEPARATORS = /[\n\r]/;
 
 export function replaceMatch(node: Ast.Match, script: string): string {
 	const loc = requireLoc(node);
@@ -23,7 +22,7 @@ export function replaceMatch(node: Ast.Match, script: string): string {
 
 		const caseArmEnd = requireLoc(caseArm.a).end + 1;
 		const nextTokenStart = findNonWhitespaceCharacter(script, caseArmEnd);
-		if (!script.startsWith('}', nextTokenStart) && !SEPARATORS.test(script.slice(caseArmEnd, nextTokenStart))) {
+		if (!script.startsWith('}', nextTokenStart) && !includesSeparator(script, caseArmEnd, nextTokenStart)) {
 			builder.addInsertion(caseArmEnd, ',');
 		}
 	}

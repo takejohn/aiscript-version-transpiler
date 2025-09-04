@@ -1,5 +1,6 @@
 import { describe, test } from 'vitest';
 import { transpileAndValidate } from './test_utils.js';
+import dedent from 'ts-dedent';
 
 test('not', () => {
 	const script = '!true';
@@ -20,6 +21,28 @@ describe('call', () => {
 	test('basic', () => {
 		const script = 'f()';
 		transpileAndValidate(script, script);
+	});
+
+	test('comma separated arguments', () => {
+		const script = 'f(1, 2, 3)';
+		transpileAndValidate(script, script);
+	});
+
+	test('line separated arguments', () => {
+		const script = dedent`
+			f(
+				1
+				2
+				3
+			)
+		`;
+		transpileAndValidate(script, script);
+	});
+
+	test('space separated arguments', () => {
+		const script = 'f(1 2 3)';
+		const expected = 'f(1, 2, 3)';
+		transpileAndValidate(script, expected);
 	});
 
 	test('print', () => {
