@@ -16,6 +16,7 @@ import { replaceAssign } from './assign.js';
 import { replaceMatch } from './match.js';
 import { replaceExists } from './exists.js';
 import { replaceNot } from './not.js';
+import { replaceBinaryOperation } from './binaryOperation.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -152,11 +153,9 @@ export function replaceNode(
 		case 'not': {
 			return replaceNot(node, script);
 		}
-		case 'and': {
-			throw new Error('Not implemented');
-		}
+		case 'and':
 		case 'or': {
-			throw new Error('Not implemented');
+			return replaceBinaryOperation(node, script);
 		}
 		case 'identifier': {
 			return replaceIdentifier(node);
