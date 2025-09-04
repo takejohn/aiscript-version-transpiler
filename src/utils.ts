@@ -56,10 +56,11 @@ export function strictIndexOf(
 }
 
 const LINE_SEPARATORS = /[\n\r]/;
+const SPACE_CHARS = /[ \t]/;
 
 export function replaceLineSeparators(string: string): string {
 	let result = '';
-	let state: 'plain' | 'slash' | 'line-comment' | 'block-comment' | 'block-comment-end' = 'plain';
+	let state: 'plain' | 'slash' | 'line-comment' | 'block-comment' | 'block-comment-end' | 'indent' = 'plain';
 
 	for (const char of string) {
 		switch (state) {
@@ -68,6 +69,7 @@ export function replaceLineSeparators(string: string): string {
 					state = 'slash';
 					result += char;
 				} else if (LINE_SEPARATORS.test(char)) {
+					state = 'indent';
 					result += ' ';
 				} else {
 					result += char;
@@ -115,6 +117,13 @@ export function replaceLineSeparators(string: string): string {
 				}
 				result += char;
 				break;
+			}
+
+			case 'indent': {
+				if (!SPACE_CHARS.test(char)) {
+					state = 'plain';
+					result += char;
+				}
 			}
 		}
 	}

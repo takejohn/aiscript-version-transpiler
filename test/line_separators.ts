@@ -107,6 +107,20 @@ describe('if', () => {
 			transpileAndValidate(script, expected);
 		});
 	});
+
+	test('indented', () => {
+		const script = dedent`
+			if true
+				1
+			else
+				0
+		`;
+		const expected = dedent`
+			if true 1
+			else 0
+		`;
+		transpileAndValidate(script, expected);
+	});
 });
 
 describe('fn', () => {
