@@ -104,6 +104,11 @@ describe('call', () => {
 		const script = '1 % 2';
 		transpileAndValidate(script, script);
 	});
+
+	test('nested', () => {
+		const script = '(((1 + 2) * 3) / 4)';
+		transpileAndValidate(script, script);
+	});
 });
 
 test('index', () => {

@@ -6,7 +6,8 @@ export function replaceCall(node: Ast.Call, script: string): string {
 	const loc = requireLoc(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
-	if (script.startsWith('(', loc.start)) {
+	const targetLoc = requireLoc(node.target);
+	if (script.startsWith('(', loc.start) && targetLoc.end + 1 <= loc.start) {
 		builder.addNodeReplacement(node.target);
 
 		let lastEnd: number | undefined;
