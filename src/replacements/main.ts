@@ -88,12 +88,6 @@ export function replaceRecursive(
 		case 'loop': {
 			throw new Error('Not implemented');
 		}
-		case 'break': {
-			throw new Error('Not implemented');
-		}
-		case 'continue': {
-			throw new Error('Not implemented');
-		}
 		case 'assign': {
 			throw new Error('Not implemented');
 		}
@@ -124,13 +118,13 @@ export function replaceRecursive(
 		case 'str': {
 			throw new Error('Not implemented');
 		}
+		case 'break':
+		case 'continue':
 		case 'num':
-		case 'bool': {
+		case 'bool':
+		case 'null': {
 			const loc = requireLoc(node);
 			return sliceInclusive(script, loc.start, loc.end);
-		}
-		case 'null': {
-			throw new Error('Not implemented');
 		}
 		case 'obj': {
 			throw new Error('Not implemented');
