@@ -18,6 +18,8 @@ import { replaceExists } from './exists.js';
 import { replaceNot } from './not.js';
 import { replaceBinaryOperation } from './binaryOperation.js';
 import { replaceCall } from './call.js';
+import { replaceIndex } from './index.js';
+import { replaceProp } from './prop.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -165,10 +167,10 @@ export function replaceNode(
 			return replaceCall(node, script);
 		}
 		case 'index': {
-			throw new Error('Not implemented');
+			return replaceIndex(node, script);
 		}
 		case 'prop': {
-			throw new Error('Not implemented');
+			return replaceProp(node, script);
 		}
 		case 'namedTypeSource': {
 			throw new Error('Not implemented');

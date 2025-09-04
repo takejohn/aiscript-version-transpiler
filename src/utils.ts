@@ -194,10 +194,14 @@ export function replaceNameWithNamespace(name: string): string {
 	return segments.map(replaceName).join(COLON);
 }
 
+export function isKeyword(name: string): boolean {
+	return keywords.includes(name);
+}
+
 export function replaceName(name: string): string {
 	const suffixStart = getSuffixUnderscoresStart(name);
 	const base = name.slice(0, suffixStart);
-	if (keywords.includes(base)) {
+	if (isKeyword(base)) {
 		return base + '_'.repeat(name.length - suffixStart + 1);
 	}
 	return name;

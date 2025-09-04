@@ -82,3 +82,21 @@ describe('call', () => {
 		transpileAndValidate(script, script);
 	});
 });
+
+test('index', () => {
+	const script = 'a[0]';
+	transpileAndValidate(script, script);
+});
+
+describe('prop', () => {
+	test('basic', () => {
+		const script = 'o.p';
+		transpileAndValidate(script, script);
+	});
+
+	test('keyword', () => {
+		const script = 'o.default';
+		const expected = 'o["default"]';
+		transpileAndValidate(script, expected);
+	});
+});
