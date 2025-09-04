@@ -10,6 +10,7 @@ import { replaceNamespace } from './namespace.js';
 import { replaceArr, replaceObj, replaceStr, replaceTmpl } from './literal.js';
 import { replaceMeta } from './meta.js';
 import { replaceReturn } from './return.js';
+import { replaceEach } from './each.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -95,7 +96,7 @@ export function replaceNode(
 			return replaceReturn(node, script);
 		}
 		case 'each': {
-			throw new Error('Not implemented');
+			return replaceEach(node, script);
 		}
 		case 'for': {
 			return replaceFor(node, script);

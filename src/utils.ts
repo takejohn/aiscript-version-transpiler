@@ -4,6 +4,9 @@ export interface SliceReplacement {
 	content: string;
 }
 
+const LINE_SEPARATORS = /[\n\r]/;
+const SPACE_CHARS = /[ \t]/;
+
 /**
  * Replaces slices of a string based on the provided replacements.
  *
@@ -67,8 +70,15 @@ export function strictLastIndexOf(
 	return result;
 }
 
-const LINE_SEPARATORS = /[\n\r]/;
-const SPACE_CHARS = /[ \t]/;
+export function findNonWhitespaceCharacter(string: string, position = 0): number {
+	for (let i = position; i < string.length; i++) {
+		const char = string[i]!;
+		if (!SPACE_CHARS.test(char) && !LINE_SEPARATORS.test(char)) {
+			return i;
+		}
+	}
+	throw new TypeError(`Non whitespace character not found`);
+}
 
 export function replaceLineSeparators(string: string): string {
 	let result = '';

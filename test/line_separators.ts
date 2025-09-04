@@ -303,6 +303,118 @@ describe('for', () => {
 	});
 });
 
+describe('each', () => {
+	test('between each and let', () => {
+		const script = dedent`
+			each
+			let e, [] {}
+		`;
+		const expected = dedent`
+			each let e, [] {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between each and let with parentheses', () => {
+		const script = dedent`
+			each
+			(let e, []) {}
+		`;
+		const expected = dedent`
+			each (let e, []) {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between let and variable', () => {
+		const script = dedent`
+			each let
+			e, [] {}
+		`;
+		const expected = dedent`
+			each let e, [] {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between let and variable with parentheses', () => {
+		const script = dedent`
+			each (let
+			e, []) {}
+		`;
+		const expected = dedent`
+			each (let e, []) {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between variable and comma', () => {
+		const script = dedent`
+			each let e
+			, [] {}
+		`;
+		const expected = dedent`
+			each let e , [] {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between variable and comma with parentheses', () => {
+		const script = dedent`
+			each (let e
+			, []) {}
+		`;
+		const expected = dedent`
+			each (let e , []) {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between comma and items', () => {
+		const script = dedent`
+			each let e,
+			[] {}
+		`;
+		const expected = dedent`
+			each let e, [] {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between comma and items with parentheses', () => {
+		const script = dedent`
+			each (let e,
+			[]) {}
+		`;
+		const expected = dedent`
+			each (let e, []) {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between items and body', () => {
+		const script = dedent`
+			each let e, []
+			{}
+		`;
+		const expected = dedent`
+			each let e, [] {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('between items with parentheses and body', () => {
+		const script = dedent`
+			each (let e, [])
+			{}
+		`;
+		const expected = dedent`
+			each (let e, []) {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+});
+
 describe('comments between', () => {
 	test('block comment', () => {
 		const script = dedent`
