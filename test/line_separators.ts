@@ -186,6 +186,146 @@ describe('if', () => {
 });
 
 describe('fn', () => {
+	describe('between argument and colon', () => {
+		test('with name', () => {
+			const script = dedent`
+				@f(x
+				: num) {
+				}
+			`;
+			const expected = dedent`
+				@f(x : num) {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('without name', () => {
+			const script = dedent`
+				@(x
+				: num) {
+				}
+			`;
+			const expected = dedent`
+				@(x : num) {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
+
+	describe('between colon and argument type', () => {
+		test('with name', () => {
+			const script = dedent`
+				@f(x:
+				num) {
+				}
+			`;
+			const expected = dedent`
+				@f(x: num) {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('without name', () => {
+			const script = dedent`
+				@(x:
+				num) {
+				}
+			`;
+			const expected = dedent`
+				@(x: num) {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
+
+	describe('between arguments and colon', () => {
+		test('with name', () => {
+			const script = dedent`
+				@f()
+				: void {
+				}
+			`;
+			const expected = dedent`
+				@f() : void {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('without name', () => {
+			const script = dedent`
+				@()
+				: void {
+				}
+			`;
+			const expected = dedent`
+				@() : void {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
+
+	describe('between colon and return type', () => {
+		test('with name', () => {
+			const script = dedent`
+				@f():
+				void {
+				}
+			`;
+			const expected = dedent`
+				@f(): void {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('without name', () => {
+			const script = dedent`
+				@():
+				void {
+				}
+			`;
+			const expected = dedent`
+				@(): void {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
+
+	describe('between return type and body', () => {
+		test('with name', () => {
+			const script = dedent`
+				@f(): void
+				{
+				}
+			`;
+			const expected = dedent`
+				@f(): void {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('without name', () => {
+			const script = dedent`
+				@(): void
+				{
+				}
+			`;
+			const expected = dedent`
+				@(): void {
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
+
 	describe('between arguments and body', () => {
 		test('with name', () => {
 			const script = dedent`
@@ -705,6 +845,138 @@ test('loop', () => {
 		}
 	`;
 	transpileAndValidate(script, expected);
+});
+
+describe('variable definition', () => {
+	describe('let', () => {
+		test('between let and name', () => {
+			const script = dedent`
+				let
+				x = 0
+			`;
+			const expected = dedent`
+				let x = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between name and colon', () => {
+			const script = dedent`
+				let x
+				: num = 0
+			`;
+			const expected = dedent`
+				let x : num = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between colon and type', () => {
+			const script = dedent`
+				let x:
+				num = 0
+			`;
+			const expected = dedent`
+				let x: num = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between type and equal', () => {
+			const script = dedent`
+				let x: num
+				= 0
+			`;
+			const expected = dedent`
+				let x: num = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between name and equal', () => {
+			const script = dedent`
+				let x
+				= 0
+			`;
+			const expected = dedent`
+				let x = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between equal and expression', () => {
+			const script = dedent`
+				let x =
+				0
+			`;
+			transpileAndValidate(script, script);
+		});
+	});
+
+	describe('var', () => {
+		test('between var and name', () => {
+			const script = dedent`
+				var
+				x = 0
+			`;
+			const expected = dedent`
+				var x = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between name and colon', () => {
+			const script = dedent`
+				var x
+				: num = 0
+			`;
+			const expected = dedent`
+				var x : num = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between colon and type', () => {
+			const script = dedent`
+				var x:
+				num = 0
+			`;
+			const expected = dedent`
+				var x: num = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between type and equal', () => {
+			const script = dedent`
+				var x: num
+				= 0
+			`;
+			const expected = dedent`
+				var x: num = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between name and equal', () => {
+			const script = dedent`
+				var x
+				= 0
+			`;
+			const expected = dedent`
+				var x = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('between equal and expression', () => {
+			const script = dedent`
+				var x =
+				0
+			`;
+			transpileAndValidate(script, script);
+		});
+	});
 });
 
 describe('comments between', () => {

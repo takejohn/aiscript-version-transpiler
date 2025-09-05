@@ -168,6 +168,21 @@ export function includesSeparator(string: string, start = 0, end = string.length
 	return false;
 }
 
+export function findNextItem(string: string, start: number): [number, 'comma' | 'new-line' | null] {
+	let separator: 'comma' | 'new-line' | null = null;
+	for (let i = start; i < string.length; i++) {
+		const char = string[i]!;
+		if (char === ',') {
+			separator = 'comma';
+		} else if (LINE_SEPARATORS.test(char)) {
+			separator = 'new-line';
+		} else if (!SPACE_CHARS.test(char)) {
+			return [i, separator];
+		}
+	}
+	throw new TypeError(`Non whitespace character not found`);
+}
+
 const keywords: readonly string[] = [
 	'case',
 	'default',
@@ -229,4 +244,23 @@ function getSuffixUnderscoresStart(name: string): number {
 		}
 	}
 	return name.length;
+}
+
+export function getNameEnd(script: string, start: number): number {
+	if (start >= script.length) {
+		throw new TypeError('Unexpected end of file');
+	}
+
+	const startChar = script[start]!;
+	if (!/[A-Z_]/i.test(startChar)) {
+		throw new TypeError('Invalid argument name');
+	}
+
+	for (let position = start + 1; position < script.length; position++) {
+		const char = script[position]!;
+		if (!/[A-Z0-9_]/i.test(char)) {
+			return position;
+		}
+	}
+	return script.length;
 }

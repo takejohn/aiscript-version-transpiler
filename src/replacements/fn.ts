@@ -1,43 +1,97 @@
 import type { Ast } from 'aiscript@0.19.0';
 import { ReplacementsBuilder, getActualLocation } from './main.js';
-import { replaceLineSeparators, replaceName, strictIndexOf } from '../utils.js';
+import {
+	findNextItem,
+	findNonWhitespaceCharacter,
+	getNameEnd,
+	replaceLineSeparators,
+	replaceName,
+	strictIndexOf,
+} from '../utils.js';
+import { replaceType } from './type.js';
 
 const AT_SIGN = '@';
 const LEFT_PARENTHESIS = '(';
 const RIGHT_PARENTHESIS = ')';
 const LEFT_BRACE = '{';
+const COLON = ':';
 
 export function replaceFn(node: Ast.Fn, script: string, name?: string): string {
 	const loc = getActualLocation(node);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
-	let argsStart: number;
+
+	let tokenBeforeLeftParenthesisEnd: number;
 	if (name != null) {
 		const nameStart = strictIndexOf(script, name, loc.start + AT_SIGN.length);
 		const nameEnd = nameStart + name.length;
 		builder.addReplacement(nameStart, nameEnd, replaceName);
-		argsStart = strictIndexOf(script, LEFT_PARENTHESIS, nameEnd);
+		tokenBeforeLeftParenthesisEnd = nameEnd;
 	} else {
-		argsStart = strictIndexOf(script, LEFT_PARENTHESIS, loc.start + AT_SIGN.length);
+		tokenBeforeLeftParenthesisEnd = loc.start + AT_SIGN.length;
 	}
-	const argsEnd = getArgsEnd(script, argsStart, loc.end);
-	const bodyStart = strictIndexOf(script, LEFT_BRACE, argsEnd + 1);
-	builder.addReplacement(argsEnd + 1, bodyStart, replaceLineSeparators);
+
+	const leftParenthesisStart = strictIndexOf(script, LEFT_PARENTHESIS, tokenBeforeLeftParenthesisEnd);
+	const leftParenthesisEnd = leftParenthesisStart + LEFT_PARENTHESIS.length;
+	const tokenAfterLeftParenthesisStart = findNonWhitespaceCharacter(script, leftParenthesisEnd);
+	let rightParenthesisStart: number;
+	if (script.startsWith(RIGHT_PARENTHESIS, tokenAfterLeftParenthesisStart)) {
+		rightParenthesisStart = tokenAfterLeftParenthesisStart;
+	} else {
+		const argsEnd = replaceArgs(builder, script, tokenAfterLeftParenthesisStart);
+		rightParenthesisStart = strictIndexOf(script, RIGHT_PARENTHESIS, argsEnd);
+	}
+
+	const rightParenthesisEnd = rightParenthesisStart + RIGHT_PARENTHESIS.length;
+	const tokenAfterRightParenthesisStart = findNonWhitespaceCharacter(script, rightParenthesisEnd);
+	let tokenBeforeBodyEnd: number;
+	if (script.startsWith(COLON, tokenAfterRightParenthesisStart)) {
+		builder.addReplacement(rightParenthesisEnd, tokenAfterRightParenthesisStart, replaceLineSeparators);
+
+		const colonEnd = tokenAfterRightParenthesisStart + COLON.length;
+		const returnTypeStart = findNonWhitespaceCharacter(script, colonEnd);
+		builder.addReplacement(colonEnd, returnTypeStart, replaceLineSeparators);
+
+		tokenBeforeBodyEnd = replaceType(builder, script, returnTypeStart);
+	} else {
+		tokenBeforeBodyEnd = rightParenthesisEnd;
+	}
+
+	const bodyStart = strictIndexOf(script, LEFT_BRACE, tokenBeforeBodyEnd);
+	builder.addReplacement(tokenBeforeBodyEnd, bodyStart, replaceLineSeparators);
 	builder.addNodeReplacements(node.children);
 	return builder.execute();
 }
 
-function getArgsEnd(script: string, start: number, end: number): number {
-	let depth = 0;
-	for (let i = start; i <= end; i++) {
-		const char = script[i]!;
-		if (char === LEFT_PARENTHESIS) {
-			depth++;
-		} else if (char === RIGHT_PARENTHESIS) {
-			depth--;
+function replaceArgs(builder: ReplacementsBuilder, script: string, start: number): number {
+	let prevArgEnd = replaceArg(builder, script, start);
+	let [currentArgStart, separator] = findNextItem(script, prevArgEnd);
+
+	while (!script.startsWith(RIGHT_PARENTHESIS, currentArgStart)) {
+		if (!separator) {
+			builder.addInsertion(prevArgEnd, ',');
 		}
-		if (depth === 0) {
-			return i;
-		}
+
+		prevArgEnd = replaceArg(builder, script, currentArgStart);
+		[currentArgStart, separator] = findNextItem(script, prevArgEnd);
 	}
-	throw new TypeError('Unterminated argument list');
+
+	return prevArgEnd;
+}
+
+function replaceArg(builder: ReplacementsBuilder, script: string, start: number): number {
+	const nameEnd = getNameEnd(script, start);
+	builder.addReplacement(start, nameEnd, replaceName);
+
+	const tokenAfterNameStart = findNonWhitespaceCharacter(script, nameEnd);
+	if (script.startsWith(COLON, tokenAfterNameStart)) {
+		builder.addReplacement(nameEnd, tokenAfterNameStart, replaceLineSeparators);
+
+		const colonEnd = tokenAfterNameStart + COLON.length;
+		const typeStart = findNonWhitespaceCharacter(script, colonEnd);
+		builder.addReplacement(colonEnd, typeStart, replaceLineSeparators);
+
+		return replaceType(builder, script, typeStart);
+	} else {
+		return nameEnd;
+	}
 }
