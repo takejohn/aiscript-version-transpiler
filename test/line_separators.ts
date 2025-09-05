@@ -592,6 +592,17 @@ describe('each', () => {
 		transpileAndValidate(script, expected);
 	});
 
+	test('between variable and items', () => {
+		const script = dedent`
+			each let e
+			[] {}
+		`;
+		const expected = dedent`
+			each let e, [] {}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
 	test('between comma and items', () => {
 		const script = dedent`
 			each let e,

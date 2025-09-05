@@ -23,11 +23,16 @@ export function replaceEach(node: Ast.Each, script: string): string {
 
 	builder.addReplacement(varStart, varStart + node.var.length, replaceName);
 
-	const itemsLoc = getActualLocation(node.items);
-	const commaStart = strictIndexOf(script, COMMA, varStart + node.var.length);
-	builder.addReplacement(varStart + node.var.length, commaStart, replaceLineSeparators);
+	const varEnd = varStart + node.var.length;
+	const nextTokenStart = findNonWhitespaceCharacter(script, varEnd);
+	builder.addReplacement(varEnd, nextTokenStart, replaceLineSeparators);
 
-	builder.addReplacement(commaStart + COMMA.length, itemsLoc.start, replaceLineSeparators);
+	const itemsLoc = getActualLocation(node.items);
+	if (script.startsWith(COMMA, nextTokenStart)) {
+		builder.addReplacement(nextTokenStart + COMMA.length, itemsLoc.start, replaceLineSeparators);
+	} else {
+		builder.addInsertion(varEnd, COMMA);
+	}
 
 	let bodyStart: number;
 	if (hasParentheses) {

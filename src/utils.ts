@@ -21,7 +21,12 @@ export function replaceSlices(
 	string: string,
 	replacements: readonly SliceReplacement[],
 ): string {
-	const sortedReplacements = replacements.toSorted((a, b) => a.start - b.start);
+	const sortedReplacements = replacements.toSorted((a, b) => {
+		if (a.start === b.start) {
+			return a.end - b.end;
+		}
+		return a.start - b.start;
+	});
 	let result = '';
 
 	let originalStart = 0;
