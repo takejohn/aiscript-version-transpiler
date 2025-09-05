@@ -1003,6 +1003,80 @@ describe('variable definition', () => {
 	});
 });
 
+describe('assign', () => {
+	describe('assign', () => {
+		test('before equal', () => {
+			const script = dedent`
+				x
+				= 0
+			`;
+			const expected = dedent`
+				x = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('after equal', () => {
+			const script = dedent`
+				x =
+				0
+			`;
+			const expected = dedent`
+				x = 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
+
+	describe('add-assign', () => {
+		test('before equal', () => {
+			const script = dedent`
+				x
+				+= 0
+			`;
+			const expected = dedent`
+				x += 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('after equal', () => {
+			const script = dedent`
+				x +=
+				0
+			`;
+			const expected = dedent`
+				x += 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
+
+	describe('sub-assign', () => {
+		test('before equal', () => {
+			const script = dedent`
+				x
+				-= 0
+			`;
+			const expected = dedent`
+				x -= 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('after equal', () => {
+			const script = dedent`
+				x -=
+				0
+			`;
+			const expected = dedent`
+				x -= 0
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
+});
+
 describe('comments between', () => {
 	test('block comment', () => {
 		const script = dedent`
