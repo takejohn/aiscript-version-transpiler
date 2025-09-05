@@ -43,24 +43,41 @@ function replaceForRange(node: Ast.For, script: string): string {
 	const varStart = strictIndexOf(script, node.var, letStart + LET_KEYWORD.length);
 	builder.addReplacement(letStart + LET_KEYWORD.length, varStart, replaceLineSeparators);
 
-	builder.addReplacement(varStart, varStart + node.var.length, replaceName);
+	const varEnd = varStart + node.var.length;
+	builder.addReplacement(varStart, varEnd, replaceName);
 
-	const tokenAfterVarStart = findNonWhitespaceCharacter(script, varStart + node.var.length);
-	builder.addReplacement(varStart + node.var.length, tokenAfterVarStart, replaceLineSeparators);
+	const tokenAfterVarStart = findNonWhitespaceCharacter(script, varEnd);
+	builder.addReplacement(varEnd, tokenAfterVarStart, replaceLineSeparators);
+
+	const hasFrom = script.startsWith(EQUAL_SIGN, tokenAfterVarStart);
+	let tokenAfterFromStart: number;
+	let fromEnd: number;
+	if (hasFrom) {
+		const fromLoc = getActualLocation(node.from);
+		fromEnd = fromLoc.end + 1;
+		builder.addReplacement(tokenAfterVarStart + EQUAL_SIGN.length, fromLoc.start, replaceLineSeparators);
+		builder.addNodeReplacement(node.from);
+		tokenAfterFromStart = findNonWhitespaceCharacter(script, fromEnd);
+	} else {
+		tokenAfterFromStart = tokenAfterVarStart;
+		fromEnd = varEnd;
+	}
+
+	const hasComma = script.startsWith(COMMA, tokenAfterFromStart);
+	let tokenBeforeToEnd: number;
+	if (hasComma) {
+		tokenBeforeToEnd = tokenAfterFromStart + COMMA.length;
+	} else {
+		tokenBeforeToEnd = fromEnd;
+		builder.addInsertion(fromEnd, COMMA);
+	}
 
 	const toLoc = getActualLocation(node.to);
-
-	if (script.startsWith(EQUAL_SIGN, tokenAfterVarStart)) {
-		const fromLoc = getActualLocation(node.from);
-		builder.addReplacement(tokenAfterVarStart + EQUAL_SIGN.length, fromLoc.start, replaceLineSeparators);
-
-		const commaStart = strictIndexOf(script, COMMA, fromLoc.end + 1);
-		builder.addReplacement(commaStart + COMMA.length, toLoc.start, replaceLineSeparators);
-	} else if (script.startsWith(COMMA, tokenAfterVarStart)) {
-		builder.addReplacement(tokenAfterVarStart + EQUAL_SIGN.length, toLoc.start, replaceLineSeparators);
-	} else {
-		throw new TypeError('Unknown token');
+	if (hasFrom || hasComma) {
+		builder.addReplacement(tokenBeforeToEnd, toLoc.start, replaceLineSeparators);
 	}
+
+	builder.addNodeReplacement(node.to);
 
 	const forLoc = getActualLocation(node.for);
 	builder.addReplacement(toLoc.end + 1, forLoc.start, replaceLineSeparators);

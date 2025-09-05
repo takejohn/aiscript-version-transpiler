@@ -388,6 +388,28 @@ describe('for', () => {
 				transpileAndValidate(script, expected);
 			});
 
+			test('between from and to', () => {
+				const script = dedent`
+					for let i = 0
+					4 {}
+				`;
+				const expected = dedent`
+					for let i = 0, 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between from and to with parentheses', () => {
+				const script = dedent`
+					for (let i = 0
+					4) {}
+				`;
+				const expected = dedent`
+					for (let i = 0, 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
 			test('between range and body', () => {
 				const script = dedent`
 					for let i = 0, 4
@@ -474,6 +496,28 @@ describe('for', () => {
 				`;
 				const expected = dedent`
 					for (let i , 4) {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between variable and to', () => {
+				const script = dedent`
+					for let i
+					4 {}
+				`;
+				const expected = dedent`
+					for let i, 4 {}
+				`;
+				transpileAndValidate(script, expected);
+			});
+
+			test('between variable and to with parentheses', () => {
+				const script = dedent`
+					for (let i
+					4) {}
+				`;
+				const expected = dedent`
+					for (let i, 4) {}
 				`;
 				transpileAndValidate(script, expected);
 			});

@@ -73,6 +73,13 @@ export class ReplacementsBuilder {
 		end: number,
 		content: string,
 	): void {
+		for (const existing of this.replacements) {
+			if (start < existing.end && existing.start < end) {
+				throw new RangeError(
+					`Attempting to replace overlapping slices (adding: ${start}..${end}, existing: ${existing.start}..${existing.end})`,
+				);
+			}
+		}
 		this.replacements.push({ start, end, content });
 		this.endOffset += content.length - (end - start);
 	}
