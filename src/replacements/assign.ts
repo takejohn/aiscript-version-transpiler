@@ -6,8 +6,8 @@ const EQUAL_SIGN = '=';
 
 export function replaceAssign(node: Ast.Assign | Ast.AddAssign | Ast.SubAssign, script: string): string {
 	const loc = getActualLocation(node, script);
-	const destLoc = getActualLocation(node.dest, script);
-	const exprLoc = getActualLocation(node.expr, script);
+	const destLoc = getActualLocation(node.dest, script, true);
+	const exprLoc = getActualLocation(node.expr, script, true);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	builder.addNodeReplacement(node.dest);

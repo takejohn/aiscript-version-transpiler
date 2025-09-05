@@ -53,7 +53,7 @@ function replaceForRange(node: Ast.For, script: string): string {
 	let tokenAfterFromStart: number;
 	let fromEnd: number;
 	if (hasFrom) {
-		const fromLoc = getActualLocation(node.from, script);
+		const fromLoc = getActualLocation(node.from, script, true);
 		fromEnd = fromLoc.end + 1;
 		builder.addReplacement(tokenAfterVarStart + EQUAL_SIGN.length, fromLoc.start, replaceLineSeparators);
 		builder.addNodeReplacement(node.from);
@@ -72,7 +72,7 @@ function replaceForRange(node: Ast.For, script: string): string {
 		builder.addInsertion(fromEnd, COMMA);
 	}
 
-	const toLoc = getActualLocation(node.to, script);
+	const toLoc = getActualLocation(node.to, script, true);
 	if (hasFrom || hasComma) {
 		builder.addReplacement(tokenBeforeToEnd, toLoc.start, replaceLineSeparators);
 	}

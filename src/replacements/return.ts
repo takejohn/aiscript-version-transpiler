@@ -7,7 +7,7 @@ const RETURN_KEYWORD = 'return';
 export function replaceReturn(node: Ast.Return, script: string): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
-	builder.addReplacement(loc.start + RETURN_KEYWORD.length, getActualLocation(node.expr, script).start, replaceLineSeparators);
+	builder.addReplacement(loc.start + RETURN_KEYWORD.length, getActualLocation(node.expr, script, true).start, replaceLineSeparators);
 	builder.addNodeReplacement(node.expr);
 	return builder.execute();
 }

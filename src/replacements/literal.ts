@@ -93,7 +93,7 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 
 	let lastEnd: number | undefined;
 	for (const [key, value] of node.value) {
-		const valueLoc = getActualLocation(value, script);
+		const valueLoc = getActualLocation(value, script, true);
 		const keyStart = strictIndexOf(script, key, lastEnd ?? loc.start + LEFT_BRACE.length);
 		if (lastEnd != null && !includesSeparator(script, lastEnd, keyStart)) {
 			builder.addInsertion(lastEnd, ',');

@@ -16,7 +16,7 @@ export function replaceMatch(node: Ast.Match, script: string): string {
 	builder.addReplacement(aboutLoc.end + 1, bodyStart, replaceLineSeparators);
 
 	for (const caseArm of node.qs) {
-		builder.addInsertion(getActualLocation(caseArm.q, script).start, 'case ');
+		builder.addInsertion(getActualLocation(caseArm.q, script, true).start, 'case ');
 		builder.addNodeReplacement(caseArm.q);
 		builder.addNodeReplacement(caseArm.a);
 

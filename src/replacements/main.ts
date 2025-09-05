@@ -270,7 +270,7 @@ export function getActualLocation(node: Ast.Node, script: string, includeEnclosi
 		case 'or': {
 			return {
 				start: getActualLocation(node.left, script, true).start,
-				end: loc.end,
+				end: getActualLocation(node.right, script, true).end,
 			};
 		}
 		case 'call': {
