@@ -3,6 +3,7 @@ import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { includesSeparator, replaceLineSeparators, strictIndexOf, strictLastIndexOf } from '../utils.js';
 
 const tmplEscapableChars = ['{', '}', '`'];
+const LEFT_BRACE = '{';
 const COLON = ':';
 
 export function replaceTmpl(node: Ast.Tmpl, script: string): string {
@@ -93,7 +94,7 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 	let lastEnd: number | undefined;
 	for (const [key, value] of node.value) {
 		const valueLoc = getActualLocation(value);
-		const keyStart = strictLastIndexOf(script, key, valueLoc.start);
+		const keyStart = strictIndexOf(script, key, lastEnd ?? loc.start + LEFT_BRACE.length);
 		if (lastEnd != null && !includesSeparator(script, lastEnd, keyStart)) {
 			builder.addInsertion(lastEnd, ',');
 		}

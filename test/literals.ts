@@ -101,6 +101,11 @@ describe('obj', () => {
 		const expected = '{ a: 0, b: 1 }';
 		transpileAndValidate(script, expected);
 	});
+
+	test('variable value', () => {
+		const script = '{ a: a }';
+		transpileAndValidate(script, script);
+	});
 });
 
 describe('arr', () => {
