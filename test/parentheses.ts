@@ -180,6 +180,21 @@ describe('call', () => {
 		`;
 		transpileAndValidate(script, expected);
 	});
+
+	test('operator left without whitespace', () => {
+		const script = '(1)+2';
+		transpileAndValidate(script, script);
+	});
+
+	test('operator right without whitespace', () => {
+		const script = '1+(2)';
+		transpileAndValidate(script, script);
+	});
+
+	test('operator left and right without whitespace', () => {
+		const script = '(1)+(2)';
+		transpileAndValidate(script, script);
+	});
 });
 
 describe('definition', () => {
