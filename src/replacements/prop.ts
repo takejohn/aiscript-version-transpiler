@@ -3,13 +3,13 @@ import { getActualLocation, ReplacementsBuilder } from './main.js';
 import { isKeyword } from '../utils.js';
 
 export function replaceProp(node: Ast.Prop, script: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	builder.addNodeReplacement(node.target);
 
 	if (isKeyword(node.name)) {
-		const targetLoc = getActualLocation(node.target);
+		const targetLoc = getActualLocation(node.target, script);
 		builder.addReplacement(targetLoc.end + 1, loc.end + 1, () => `["${node.name}"]`);
 	}
 

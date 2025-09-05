@@ -8,10 +8,10 @@ const KEYWORD_ELIF = 'elif';
 const KEYWORD_ELSE = 'else';
 
 export function replaceIf(node: Ast.If, script: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
-	const condLoc = getActualLocation(node.cond);
-	const thenLoc = getActualLocation(node.then);
+	const condLoc = getActualLocation(node.cond, script, true);
+	const thenLoc = getActualLocation(node.then, script);
 
 	builder.addReplacement(loc.start + KEYWORD_IF.length, condLoc.start, replaceLineSeparators);
 
@@ -26,8 +26,8 @@ export function replaceIf(node: Ast.If, script: string): string {
 			KEYWORD_ELIF,
 			lastThenLoc.end + 1,
 		);
-		const elseifCondLoc = getActualLocation(elseifCond);
-		const elseifThenLoc = getActualLocation(elseifThen);
+		const elseifCondLoc = getActualLocation(elseifCond, script, true);
+		const elseifThenLoc = getActualLocation(elseifThen, script);
 		builder.addReplacement(keywordElifStart + KEYWORD_ELIF.length, elseifCondLoc.start, replaceLineSeparators);
 		builder.addNodeReplacement(elseifCond);
 		builder.addReplacement(elseifCondLoc.end + 1, elseifThenLoc.start, replaceLineSeparators);
@@ -41,9 +41,9 @@ export function replaceIf(node: Ast.If, script: string): string {
 		const keywordElseStart = strictIndexOf(
 			script,
 			KEYWORD_ELSE,
-			getActualLocation(lastThen).end + 1,
+			getActualLocation(lastThen, script).end + 1,
 		);
-		builder.addReplacement(keywordElseStart + KEYWORD_ELSE.length, getActualLocation(node.else).start, replaceLineSeparators);
+		builder.addReplacement(keywordElseStart + KEYWORD_ELSE.length, getActualLocation(node.else, script).start, replaceLineSeparators);
 		builder.addNodeReplacement(node.else);
 	}
 

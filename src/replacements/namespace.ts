@@ -6,7 +6,7 @@ const COLON2 = '::';
 const LEFT_BRACE = '{';
 
 export function replaceNamespace(node: Ast.Namespace, script: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	const nameStart = strictIndexOf(script, node.name, loc.start + COLON2.length);
 	const nameEnd = nameStart + node.name.length;

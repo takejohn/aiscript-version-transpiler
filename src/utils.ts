@@ -68,13 +68,29 @@ export function strictLastIndexOf(
 }
 
 export function findNonWhitespaceCharacter(string: string, position = 0): number {
+	const result = findNonWhitespaceCharacterOptional(string, position);
+	if (result != null) {
+		return result;
+	}
+	throw new TypeError(`Non whitespace character not found`);
+}
+
+export function findNonWhitespaceCharacterOptional(string: string, position = 0): number | undefined {
 	for (let i = position; i < string.length; i++) {
 		const char = string[i]!;
 		if (!SPACE_CHARS.test(char) && !LINE_SEPARATORS.test(char)) {
 			return i;
 		}
 	}
-	throw new TypeError(`Non whitespace character not found`);
+}
+
+export function findLastNonWhitespaceCharacterOptional(string: string, position = string.length): number | undefined {
+	for (let i = position - 1; i >= 0; i--) {
+		const char = string[i]!;
+		if (!SPACE_CHARS.test(char) && !LINE_SEPARATORS.test(char)) {
+			return i;
+		}
+	}
 }
 
 export function replaceLineSeparators(string: string): string {

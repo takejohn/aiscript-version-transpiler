@@ -9,7 +9,7 @@ const RIGHT_PARENTHESIS = ')';
 const COMMA = ',';
 
 export function replaceEach(node: Ast.Each, script: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
@@ -27,7 +27,7 @@ export function replaceEach(node: Ast.Each, script: string): string {
 	const nextTokenStart = findNonWhitespaceCharacter(script, varEnd);
 	builder.addReplacement(varEnd, nextTokenStart, replaceLineSeparators);
 
-	const itemsLoc = getActualLocation(node.items);
+	const itemsLoc = getActualLocation(node.items, script);
 	if (script.startsWith(COMMA, nextTokenStart)) {
 		builder.addReplacement(nextTokenStart + COMMA.length, itemsLoc.start, replaceLineSeparators);
 	} else {

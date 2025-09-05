@@ -19,9 +19,9 @@ function replaceForTimes(node: Ast.For, script: string): string {
 	if (node.times == null) {
 		throw new TypeError('times should exist');
 	}
-	const loc = getActualLocation(node);
-	const timesLoc = getActualLocation(node.times);
-	const forLoc = getActualLocation(node.for);
+	const loc = getActualLocation(node, script);
+	const timesLoc = getActualLocation(node.times, script);
+	const forLoc = getActualLocation(node.for, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	builder.addReplacement(loc.start + FOR_KEYWORD.length, timesLoc.start, replaceLineSeparators);
 	builder.addReplacement(timesLoc.end + 1, forLoc.start, replaceLineSeparators);
@@ -34,7 +34,7 @@ function replaceForRange(node: Ast.For, script: string): string {
 		throw new TypeError('var, from and to should exist');
 	}
 
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	const letStart = strictIndexOf(script, LET_KEYWORD, loc.start + FOR_KEYWORD.length);
@@ -53,7 +53,7 @@ function replaceForRange(node: Ast.For, script: string): string {
 	let tokenAfterFromStart: number;
 	let fromEnd: number;
 	if (hasFrom) {
-		const fromLoc = getActualLocation(node.from);
+		const fromLoc = getActualLocation(node.from, script);
 		fromEnd = fromLoc.end + 1;
 		builder.addReplacement(tokenAfterVarStart + EQUAL_SIGN.length, fromLoc.start, replaceLineSeparators);
 		builder.addNodeReplacement(node.from);
@@ -72,14 +72,14 @@ function replaceForRange(node: Ast.For, script: string): string {
 		builder.addInsertion(fromEnd, COMMA);
 	}
 
-	const toLoc = getActualLocation(node.to);
+	const toLoc = getActualLocation(node.to, script);
 	if (hasFrom || hasComma) {
 		builder.addReplacement(tokenBeforeToEnd, toLoc.start, replaceLineSeparators);
 	}
 
 	builder.addNodeReplacement(node.to);
 
-	const forLoc = getActualLocation(node.for);
+	const forLoc = getActualLocation(node.for, script);
 	builder.addReplacement(toLoc.end + 1, forLoc.start, replaceLineSeparators);
 	builder.addNodeReplacement(node.for);
 	return builder.execute();

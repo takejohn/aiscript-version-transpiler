@@ -3,10 +3,10 @@ import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { replaceLineSeparators } from '../utils.js';
 
 export function replaceExists(node: Ast.Exists, script: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
-	const identifierLoc = getActualLocation(node.identifier);
+	const identifierLoc = getActualLocation(node.identifier, script);
 	builder.addReplacement(loc.start, identifierLoc.start, replaceLineSeparators);
 
 	builder.addNodeReplacement(node.identifier);

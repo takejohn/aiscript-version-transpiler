@@ -185,6 +185,18 @@ describe('if', () => {
 	});
 });
 
+test('group', () => {
+	const script = dedent`
+		(
+			1 + 2
+		)
+	`;
+	const expected = dedent`
+		( 1 + 2 )
+	`;
+	transpileAndValidate(script, expected);
+});
+
 describe('fn', () => {
 	describe('between argument and colon', () => {
 		test('with name', () => {
@@ -455,6 +467,18 @@ describe('for', () => {
 			`;
 			const expected = dedent`
 				for (4) {}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('in times expression', () => {
+			const script = dedent`
+				for (
+					4
+				) {}
+			`;
+			const expected = dedent`
+				for ( 4 ) {}
 			`;
 			transpileAndValidate(script, expected);
 		});

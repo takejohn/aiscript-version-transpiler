@@ -17,7 +17,7 @@ const LEFT_BRACE = '{';
 const COLON = ':';
 
 export function replaceFn(node: Ast.Fn, script: string, name?: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	let tokenBeforeLeftParenthesisEnd: number;

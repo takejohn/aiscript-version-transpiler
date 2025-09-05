@@ -3,16 +3,16 @@ import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { includesSeparator } from '../utils.js';
 
 export function replaceCall(node: Ast.Call, script: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
-	const targetLoc = getActualLocation(node.target);
+	const targetLoc = getActualLocation(node.target, script);
 	if (script.startsWith('(', targetLoc.end + 1)) {
 		builder.addNodeReplacement(node.target);
 
 		let lastEnd: number | undefined;
 		for (const arg of node.args) {
-			const argLoc = getActualLocation(arg);
+			const argLoc = getActualLocation(arg, script);
 			if (lastEnd != null && !includesSeparator(script, lastEnd, argLoc.start)) {
 				builder.addInsertion(lastEnd, ',');
 			}

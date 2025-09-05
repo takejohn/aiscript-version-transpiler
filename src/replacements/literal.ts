@@ -7,7 +7,7 @@ const LEFT_BRACE = '{';
 const COLON = ':';
 
 export function replaceTmpl(node: Ast.Tmpl, script: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	for (let i = 0; i < node.tmpl.length; i++) {
 		const element = node.tmpl[i]!;
@@ -15,14 +15,14 @@ export function replaceTmpl(node: Ast.Tmpl, script: string): string {
 			let start: number;
 			if (i > 0) {
 				const prevElement = node.tmpl[i - 1]!;
-				start = strictIndexOf(script, '}', requireElementLoc(prevElement).end + 1);
+				start = strictIndexOf(script, '}', requireElementLoc(prevElement, script).end + 1);
 			} else {
 				start = loc.start;
 			}
 			let end: number;
 			if (i < node.tmpl.length - 1) {
 				const nextElement = node.tmpl[i + 1]!;
-				end = strictLastIndexOf(script, '{', requireElementLoc(nextElement).start);
+				end = strictLastIndexOf(script, '{', requireElementLoc(nextElement, script).start);
 			} else {
 				end = loc.end;
 			}
@@ -34,15 +34,15 @@ export function replaceTmpl(node: Ast.Tmpl, script: string): string {
 	return builder.execute();
 }
 
-function requireElementLoc(element: string | Ast.Expression): Ast.Loc {
+function requireElementLoc(element: string | Ast.Expression, script: string): Ast.Loc {
 	if (typeof element !== 'object') {
 		throw new TypeError('Expected expression');
 	}
-	return getActualLocation(element);
+	return getActualLocation(element, script);
 }
 
 export function replaceStr(node: Ast.Str, script: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const quote = script.at(loc.start);
 	if (quote !== '\'' && quote !== '"') {
 		throw new TypeError(`Unknown quote character: ${quote}`);
@@ -88,12 +88,12 @@ function replaceStringContent(original: string, escapableChars: readonly string[
 }
 
 export function replaceObj(node: Ast.Obj, script: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	let lastEnd: number | undefined;
 	for (const [key, value] of node.value) {
-		const valueLoc = getActualLocation(value);
+		const valueLoc = getActualLocation(value, script);
 		const keyStart = strictIndexOf(script, key, lastEnd ?? loc.start + LEFT_BRACE.length);
 		if (lastEnd != null && !includesSeparator(script, lastEnd, keyStart)) {
 			builder.addInsertion(lastEnd, ',');
@@ -115,12 +115,12 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 }
 
 export function replaceArr(node: Ast.Arr, script: string): string {
-	const loc = getActualLocation(node);
+	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	let lastEnd: number | undefined;
 	for (const item of node.value) {
-		const itemLoc = getActualLocation(item);
+		const itemLoc = getActualLocation(item, script);
 		if (lastEnd != null && !includesSeparator(script, lastEnd, itemLoc.start)) {
 			builder.addInsertion(lastEnd, ',');
 		}
