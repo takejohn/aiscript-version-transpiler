@@ -128,3 +128,8 @@ describe('prop', () => {
 		transpileAndValidate(script, expected);
 	});
 });
+
+test('exists', () => {
+	const script = 'exists THIS_URL';
+	transpileAndValidate(script, script);
+});

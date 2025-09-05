@@ -7,7 +7,7 @@ export function replaceExists(node: Ast.Exists, script: string): string {
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	const identifierLoc = getActualLocation(node.identifier);
-	builder.addReplacement(loc.start, identifierLoc.end, replaceLineSeparators);
+	builder.addReplacement(loc.start, identifierLoc.start, replaceLineSeparators);
 
 	builder.addNodeReplacement(node.identifier);
 
