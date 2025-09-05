@@ -34,6 +34,8 @@ export function replaceEach(node: Ast.Each, script: string): string {
 		builder.addInsertion(varEnd, COMMA);
 	}
 
+	builder.addNodeReplacement(node.items);
+
 	let bodyStart: number;
 	if (hasParentheses) {
 		const rightParenthesisStart = strictIndexOf(script, RIGHT_PARENTHESIS, itemsLoc.end + 1);
@@ -42,6 +44,8 @@ export function replaceEach(node: Ast.Each, script: string): string {
 		bodyStart = findNonWhitespaceCharacter(script, itemsLoc.end + 1);
 	}
 	builder.addReplacement(itemsLoc.end + 1, bodyStart, replaceLineSeparators);
+
+	builder.addNodeReplacement(node.for);
 
 	return builder.execute();
 }
