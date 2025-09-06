@@ -166,3 +166,11 @@ describe('arr', () => {
 		transpileAndValidate(script, expected);
 	});
 });
+
+test('tmpl and string', () => {
+	const script = dedent`
+		\`{0}\`
+		"\`"
+	`;
+	transpileAndValidate(script, script);
+});

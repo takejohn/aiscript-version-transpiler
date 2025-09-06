@@ -110,8 +110,12 @@ function* getComments(script: string, start = 0, end = script.length): Iterable<
 	const state: ('plain' | 'tmpl-string' | 'tmpl-escape')[] = [];
 
 	for (let i = start; i < end;) {
+		if (state.length === 0) {
+			return;
+		}
+
 		const char = script[i]!;
-		switch (state.at(-1) ?? 'plain') {
+		switch (state.at(-1)!) {
 			case 'plain': {
 				if (char === '\'' || char === '"') {
 					i = skipString(script, i);
