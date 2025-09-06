@@ -1,5 +1,5 @@
 import { dedent } from 'ts-dedent';
-import { test } from 'vitest';
+import { describe, test } from 'vitest';
 import { transpileAndValidate } from './test_utils';
 
 test('case', () => {
@@ -80,4 +80,70 @@ test('line separator between about and body', () => {
 		}
 	`;
 	transpileAndValidate(script, expected);
+});
+
+describe('obj as right hand of arm', () => {
+	describe('without parentheses', () => {
+		test('case', () => {
+			const script = dedent`
+				match 0 {
+					1 => { key: "value" }
+				}
+			`;
+			const expected = dedent`
+				match 0 {
+					case 1 => ({ key: "value" })
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('default', () => {
+			const script = dedent`
+				match 0 {
+					1 => 2
+					* => { key: "value" }
+				}
+			`;
+			const expected = dedent`
+				match 0 {
+					case 1 => 2
+					default => ({ key: "value" })
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
+
+	describe('with parentheses', () => {
+		test('case', () => {
+			const script = dedent`
+				match 0 {
+					1 => ({ key: "value" })
+				}
+			`;
+			const expected = dedent`
+				match 0 {
+					case 1 => ({ key: "value" })
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+
+		test('default', () => {
+			const script = dedent`
+				match 0 {
+					1 => 2
+					* => ({ key: "value" })
+				}
+			`;
+			const expected = dedent`
+				match 0 {
+					case 1 => 2
+					default => ({ key: "value" })
+				}
+			`;
+			transpileAndValidate(script, expected);
+		});
+	});
 });

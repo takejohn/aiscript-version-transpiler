@@ -18,9 +18,9 @@ export function replaceMatch(node: Ast.Match, script: string): string {
 	for (const caseArm of node.qs) {
 		builder.addInsertion(getActualLocation(caseArm.q, script, true).start, 'case ');
 		builder.addNodeReplacement(caseArm.q);
-		builder.addNodeReplacement(caseArm.a);
+		replaceArmRightHand(caseArm.a, builder, script);
 
-		const caseArmEnd = getActualLocation(caseArm.a, script).end + 1;
+		const caseArmEnd = getActualLocation(caseArm.a, script, true).end + 1;
 		const nextTokenStart = findNonWhitespaceCharacter(script, caseArmEnd);
 		if (!script.startsWith('}', nextTokenStart) && !includesSeparator(script, caseArmEnd, nextTokenStart)) {
 			builder.addInsertion(caseArmEnd, ',');
@@ -31,8 +31,19 @@ export function replaceMatch(node: Ast.Match, script: string): string {
 		const defaultLoc = getActualLocation(node.default, script);
 		const asteriskStart = strictLastIndexOf(script, ASTERISK, defaultLoc.start);
 		builder.addReplacement(asteriskStart, asteriskStart + 1, () => 'default');
-		builder.addNodeReplacement(node.default);
+		replaceArmRightHand(node.default, builder, script);
 	}
 
 	return builder.execute();
+}
+
+function replaceArmRightHand(node: Ast.Node, builder: ReplacementsBuilder, script: string): void {
+	if (node.type === 'obj') {
+		const nodeLoc = getActualLocation(node, script, true);
+		if (!script.startsWith('(', nodeLoc.start)) {
+			builder.addInsertion(nodeLoc.start, '(');
+			builder.addInsertion(nodeLoc.end + 1, ')');
+		}
+	}
+	builder.addNodeReplacement(node);
 }
