@@ -1,6 +1,6 @@
 import type { Ast } from 'aiscript@0.19.0';
 import { ReplacementsBuilder, getActualLocation } from './main.js';
-import { includesSeparator } from '../utils.js';
+import { findNextItem } from '../utils.js';
 
 export function replaceCall(node: Ast.Call, script: string): string {
 	const loc = getActualLocation(node, script);
@@ -12,14 +12,13 @@ export function replaceCall(node: Ast.Call, script: string): string {
 		const excludeParentheses = node.args.length === 1
 			&& getActualLocation(node.args[0]!, script, true).start === getActualLocation(node.target, script, true).end + 1;
 
-		let lastEnd: number | undefined;
 		for (const arg of node.args) {
-			const argLoc = getActualLocation(arg, script, !excludeParentheses);
-			if (lastEnd != null && !includesSeparator(script, lastEnd, argLoc.start)) {
-				builder.addInsertion(lastEnd, ',');
-			}
 			builder.addNodeReplacement(arg, !excludeParentheses);
-			lastEnd = argLoc.end + 1;
+			const argLoc = getActualLocation(arg, script, !excludeParentheses);
+			const [nextTokenStart, separator] = findNextItem(script, argLoc.end + 1);
+			if (separator == null && !script.startsWith(')', nextTokenStart)) {
+				builder.addInsertion(argLoc.end + 1, ',');
+			}
 		}
 	} else {
 		for (const arg of node.args) {

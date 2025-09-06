@@ -93,6 +93,12 @@ describe('function call parameters', () => {
 		const expected = 'f(g(a, 0))';
 		transpileAndValidate(script, expected);
 	});
+
+	test('enclosing parentheses, space separated', () => {
+		const script = '(f(a b))';
+		const expected = '(f(a, b))';
+		transpileAndValidate(script, expected);
+	});
 });
 
 describe('object with reserved word key', () => {
