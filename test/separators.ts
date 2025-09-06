@@ -78,6 +78,23 @@ describe('function type annotation', () => {
 	});
 });
 
+describe('function call parameters', () => {
+	test('line separated, 1 argument', () => {
+		const script = dedent`
+			f(
+				0
+			)
+		`;
+		transpileAndValidate(script, script);
+	});
+
+	test('nested call, space separated', () => {
+		const script = 'f(g(a 0))';
+		const expected = 'f(g(a, 0))';
+		transpileAndValidate(script, expected);
+	});
+});
+
 describe('line comment between', () => {
 	test('call', () => {
 		const script = dedent`
