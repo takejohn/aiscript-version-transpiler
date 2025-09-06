@@ -75,8 +75,8 @@ export function findNonWhitespaceCharacter(string: string, position = 0): number
 	throw new TypeError(`Non whitespace character not found`);
 }
 
-export function findNonWhitespaceCharacterOptional(string: string, position = 0): number | undefined {
-	for (let i = position; i < string.length;) {
+export function findNonWhitespaceCharacterOptional(string: string, position = 0, end = string.length): number | undefined {
+	for (let i = position; i < end;) {
 		const char = string[i]!;
 		if (!SPACE_CHARS.test(char) && !LINE_SEPARATORS.test(char)) {
 			const afterComment = trySkipComment(string, i);
@@ -90,9 +90,9 @@ export function findNonWhitespaceCharacterOptional(string: string, position = 0)
 	}
 }
 
-export function findLastNonWhitespaceCharacterOptional(string: string, position = string.length): number | undefined {
-	const comments = [...getComments(string, position)];
-	for (let i = position - 1; i >= 0;) {
+export function findLastNonWhitespaceCharacterOptional(string: string, position = string.length, start = 0): number | undefined {
+	const comments = [...getComments(string, start, position)];
+	for (let i = position - 1; i >= start;) {
 		const char = string[i]!;
 		if (!SPACE_CHARS.test(char) && !LINE_SEPARATORS.test(char)) {
 			const comment = comments.find(([_start, end]) => end === i);

@@ -129,7 +129,7 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 		const colonEnd = colonStart + COLON.length;
 		builder.addReplacement(colonEnd, valueLoc.start, replaceLineSeparators);
 
-		builder.addNodeReplacement(value);
+		builder.addNodeReplacement(value, true);
 
 		entryStart = nextEntryStart;
 	}

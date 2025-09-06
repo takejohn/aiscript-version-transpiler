@@ -129,6 +129,11 @@ describe('obj', () => {
 		const script = '{ a: a }';
 		transpileAndValidate(script, script);
 	});
+
+	test('value in nested parentheses', () => {
+		const script = '{ a: ((0)) }';
+		transpileAndValidate(script, script);
+	});
 });
 
 describe('arr', () => {

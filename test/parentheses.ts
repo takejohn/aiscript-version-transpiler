@@ -630,3 +630,15 @@ test('return', () => {
 	`;
 	transpileAndValidate(script, expected);
 });
+
+test('nested', () => {
+	const script = dedent`
+		(
+			(0)
+		)
+	`;
+	const expected = dedent`
+		( (0) )
+	`;
+	transpileAndValidate(script, expected);
+});

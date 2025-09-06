@@ -52,20 +52,20 @@ export class ReplacementsBuilder {
 		this._addReplacement(start, end, content);
 	}
 
-	public addNodeReplacement(node: Ast.Node, includeEnclosingParentheses = true): void {
+	public addNodeReplacement(node: Ast.Node, includeEnclosingParentheses = true, parenthesesLimit?: Ast.Loc): void {
 		const innerLoc = getActualLocation(node, this.script, false);
 		if (includeEnclosingParentheses) {
-			const outerLoc = getEnclosingParentheses(innerLoc, this.script) ?? innerLoc;
+			const outerLoc = getEnclosingParenthesesRecursive(innerLoc, this.script, parenthesesLimit) ?? innerLoc;
 			this._addReplacement(
 				outerLoc.start,
 				outerLoc.end + 1,
-				replaceNode(node, this.script, true),
+				replaceNodeAndLineSeparatorsInParentheses(node, this.script, parenthesesLimit),
 			);
 		} else {
 			this._addReplacement(
 				innerLoc.start,
 				innerLoc.end + 1,
-				replaceNode(node, this.script, false),
+				replaceNode(node, this.script),
 			);
 		}
 	}
@@ -102,31 +102,41 @@ export class ReplacementsBuilder {
 
 export function replaceAst(ast: Ast.Node[], script: string): string {
 	const replacements: readonly SliceReplacement[] = ast.map((node) => {
-		const content = replaceNode(node, script, true);
+		const content = replaceNodeAndLineSeparatorsInParentheses(node, script);
 		const { start, end } = getActualLocation(node, script, true);
 		return { start, end: end + 1, content };
 	});
 	return replaceSlices(script, replacements);
 }
 
+export function replaceNodeAndLineSeparatorsInParentheses(
+	node: Ast.Node,
+	script: string,
+	limit: Ast.Loc = { start: 0, end: script.length - 1 },
+): string {
+	const nodeLoc: Ast.Loc = getActualLocation(node, script, false);
+	const parenthesisPairs = getEnclosingParenthesisPairs(nodeLoc, script, limit);
+
+	if (parenthesisPairs.length === 0) {
+		return replaceNode(node, script);
+	}
+
+	const outerParentheses = parenthesisPairs.at(-1)!;
+	const builder = new ReplacementsBuilder(script, outerParentheses.start, outerParentheses.end);
+	let innerLoc = nodeLoc;
+	for (const parenthesisPair of parenthesisPairs) {
+		builder.addReplacement(parenthesisPair.start + 1, innerLoc.start, replaceLineSeparators);
+		builder.addReplacement(innerLoc.end + 1, parenthesisPair.end, replaceLineSeparators);
+		innerLoc = parenthesisPair;
+	}
+	builder.addNodeReplacement(node, false);
+	return builder.execute();
+}
+
 export function replaceNode(
 	node: Ast.Node,
 	script: string,
-	includeOuterParentheses: boolean,
 ): string {
-	if (includeOuterParentheses) {
-		const innerLoc = getActualLocation(node, script, false);
-		const enclosingParentheses = getEnclosingParentheses(innerLoc, script);
-		const outerLoc = enclosingParentheses ?? innerLoc;
-		const builder = new ReplacementsBuilder(script, outerLoc.start, outerLoc.end);
-		if (enclosingParentheses != null) {
-			builder.addReplacement(enclosingParentheses.start + 1, innerLoc.start, replaceLineSeparators);
-			builder.addReplacement(innerLoc.end + 1, enclosingParentheses.end, replaceLineSeparators);
-		}
-		builder.addNodeReplacement(node, false);
-		return builder.execute();
-	}
-
 	switch (node.type) {
 		case 'ns': {
 			return replaceNamespace(node, script);
@@ -224,7 +234,7 @@ export function replaceNode(
 export function getActualLocation(node: Ast.Node, script: string, includeEnclosingParentheses = false): Ast.Loc {
 	if (includeEnclosingParentheses) {
 		const innerLoc = getActualLocation(node, script, false);
-		const enclosingParentheses = getEnclosingParentheses(innerLoc, script);
+		const enclosingParentheses = getEnclosingParenthesesRecursive(innerLoc, script);
 		if (enclosingParentheses != null) {
 			return enclosingParentheses;
 		}
@@ -309,9 +319,40 @@ export function getActualLocation(node: Ast.Node, script: string, includeEnclosi
 	}
 }
 
-export function getEnclosingParentheses(innerLoc: Ast.Loc, script: string): Ast.Loc | undefined {
-	const leftParenthesisPos = findLastNonWhitespaceCharacterOptional(script, innerLoc.start);
-	const rightParenthesisPos = findNonWhitespaceCharacterOptional(script, innerLoc.end + 1);
+function getEnclosingParenthesesRecursive(
+	innerLoc: Ast.Loc,
+	script: string,
+	limit: Ast.Loc = { start: 0, end: script.length - 1 },
+): Ast.Loc | undefined {
+	let result;
+	let currentLoc: Ast.Loc | undefined = innerLoc;
+	currentLoc = getEnclosingParentheses(currentLoc, script, limit);
+	while (currentLoc != null) {
+		result = currentLoc;
+		currentLoc = getEnclosingParentheses(currentLoc, script, limit);
+	}
+	return result;
+}
+
+function getEnclosingParenthesisPairs(innerLoc: Ast.Loc, script: string, limit?: Ast.Loc): Ast.Loc[] {
+	const result: Ast.Loc[] = [];
+	let prevLoc: Ast.Loc = innerLoc;
+	let currentLoc = getEnclosingParentheses(prevLoc, script, limit);
+	while (currentLoc != null) {
+		result.push(currentLoc);
+		prevLoc = currentLoc;
+		currentLoc = getEnclosingParentheses(prevLoc, script, limit);
+	}
+	return result;
+}
+
+function getEnclosingParentheses(
+	innerLoc: Ast.Loc,
+	script: string,
+	limit: Ast.Loc = { start: 0, end: script.length - 1 },
+): Ast.Loc | undefined {
+	const leftParenthesisPos = findLastNonWhitespaceCharacterOptional(script, innerLoc.start, limit.start);
+	const rightParenthesisPos = findNonWhitespaceCharacterOptional(script, innerLoc.end + 1, limit.end + 1);
 	if (
 		leftParenthesisPos != null && rightParenthesisPos != null
 		&& script[leftParenthesisPos] === '(' && script[rightParenthesisPos] === ')'
