@@ -153,4 +153,10 @@ describe('arr', () => {
 		const expected = '[0, 1, 2]';
 		transpileAndValidate(script, expected);
 	});
+
+	test.only('space separated with parentheses enclosing item', () => {
+		const script = '[(-1) 1]';
+		const expected = '[(-1), 1]';
+		transpileAndValidate(script, expected);
+	});
 });

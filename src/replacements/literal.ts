@@ -3,7 +3,6 @@ import { ReplacementsBuilder, getActualLocation } from './main.js';
 import {
 	findNextItem,
 	findNonWhitespaceCharacter,
-	includesSeparator,
 	isKeyword,
 	isUnusedKeyword,
 	replaceAllIgnoringComments,
@@ -219,14 +218,13 @@ export function replaceArr(node: Ast.Arr, script: string): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
-	let lastEnd: number | undefined;
 	for (const item of node.value) {
-		const itemLoc = getActualLocation(item, script);
-		if (lastEnd != null && !includesSeparator(script, lastEnd, itemLoc.start)) {
-			builder.addInsertion(lastEnd, ',');
-		}
 		builder.addNodeReplacement(item);
-		lastEnd = itemLoc.end + 1;
+		const itemLoc = getActualLocation(item, script, true);
+		const [nextTokenStart, separator] = findNextItem(script, itemLoc.end + 1);
+		if (separator == null && !script.startsWith(']', nextTokenStart)) {
+			builder.addInsertion(itemLoc.end + 1, ',');
+		}
 	}
 
 	return builder.execute();
