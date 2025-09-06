@@ -77,3 +77,54 @@ describe('function type annotation', () => {
 		transpileAndValidate(script, expected);
 	});
 });
+
+describe('line comment between', () => {
+	test('call', () => {
+		const script = dedent`
+			f(
+				0 // zero
+				1 // one
+				2 // two
+			)
+		`;
+		transpileAndValidate(script, script);
+	});
+
+	test('obj', () => {
+		const script = dedent`
+			{
+				a: 0 // zero
+				b: 1 // one
+				c: 2 // two
+			}
+		`;
+		transpileAndValidate(script, script);
+	});
+
+	test('arr', () => {
+		const script = dedent`
+			[
+				0 // zero
+				1 // one
+				2 // two
+			]
+		`;
+		transpileAndValidate(script, script);
+	});
+
+	test('match', () => {
+		const script = dedent`
+			match 0 {
+				1 => 2 // case
+				* => 3 // default
+			}
+		`;
+		const expected = dedent`
+			match 0 {
+				case 1 => 2 // case
+				default => 3 // default
+			}
+		`;
+		transpileAndValidate(script, expected);
+	});
+});

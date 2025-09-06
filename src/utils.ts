@@ -76,21 +76,109 @@ export function findNonWhitespaceCharacter(string: string, position = 0): number
 }
 
 export function findNonWhitespaceCharacterOptional(string: string, position = 0): number | undefined {
-	for (let i = position; i < string.length; i++) {
+	for (let i = position; i < string.length;) {
 		const char = string[i]!;
 		if (!SPACE_CHARS.test(char) && !LINE_SEPARATORS.test(char)) {
-			return i;
+			const afterComment = trySkipComment(string, i);
+			if (afterComment == null) {
+				return i;
+			}
+			i = afterComment;
+			continue;
 		}
+		i++;
 	}
 }
 
 export function findLastNonWhitespaceCharacterOptional(string: string, position = string.length): number | undefined {
-	for (let i = position - 1; i >= 0; i--) {
+	const comments = [...getComments(string, position)];
+	for (let i = position - 1; i >= 0;) {
 		const char = string[i]!;
 		if (!SPACE_CHARS.test(char) && !LINE_SEPARATORS.test(char)) {
-			return i;
+			const comment = comments.find(([_start, end]) => end === i);
+			if (comment == null) {
+				return i;
+			}
+			i = comment[0];
+			continue;
+		}
+		i--;
+	}
+}
+
+function* getComments(script: string, start = 0, end = script.length): Iterable<[number, number]> {
+	const state: ('plain' | 'tmpl-string' | 'tmpl-escape')[] = [];
+
+	for (let i = start; i < end;) {
+		const char = script[i]!;
+		switch (state.at(-1) ?? 'plain') {
+			case 'plain': {
+				if (char === '\'' || char === '"') {
+					i = skipString(script, i);
+				} else if (char === '`') {
+					state.push('tmpl-string');
+					i++;
+				} else if (char === '{') {
+					state.push('plain');
+					i++;
+				} else if (char === '}') {
+					state.pop();
+					i++;
+				} else {
+					const commentEnd = trySkipComment(script, i);
+					if (commentEnd != null) {
+						yield [i, commentEnd];
+						i = commentEnd;
+					} else {
+						i++;
+					}
+				}
+				break;
+			}
+
+			case 'tmpl-string': {
+				if (char === '\\') {
+					state.push('tmpl-escape');
+				} else if (char === '{') {
+					state.push('plain');
+				} else if (char === '`') {
+					state.pop();
+				}
+				i++;
+				break;
+			}
+
+			case 'tmpl-escape': {
+				if (char !== '\\') {
+					state.pop();
+				}
+				i++;
+				break;
+			}
 		}
 	}
+}
+
+function skipString(script: string, start = 0): number {
+	const quote = script[start]!;
+	let state: 'string' | 'escape' = 'string';
+
+	for (let i = start + 1; i < script.length; i++) {
+		const char = script[i]!;
+		if (state === 'string') {
+			if (char === '\\') {
+				state = 'escape';
+			} else if (char === quote) {
+				return i + 1;
+			}
+		} else if (state === 'escape') {
+			if (char !== '\\') {
+				state = 'string';
+			}
+		}
+	}
+
+	throw new TypeError('Unexpected end of file');
 }
 
 export function replaceLineSeparators(string: string): string {
@@ -175,10 +263,16 @@ export function replaceLineSeparators(string: string): string {
 }
 
 export function includesSeparator(string: string, start = 0, end = string.length): boolean {
-	for (let i = start; i < end; i++) {
+	for (let i = start; i < end;) {
 		const char = string[i]!;
 		if (LINE_SEPARATORS.test(char) || char === ',') {
 			return true;
+		}
+		const afterComment = trySkipComment(string, i);
+		if (afterComment != null) {
+			i = afterComment;
+		} else {
+			i++;
 		}
 	}
 	return false;
@@ -186,17 +280,47 @@ export function includesSeparator(string: string, start = 0, end = string.length
 
 export function findNextItem(string: string, start: number): [number, 'comma' | 'new-line' | null] {
 	let separator: 'comma' | 'new-line' | null = null;
-	for (let i = start; i < string.length; i++) {
+	for (let i = start; i < string.length;) {
 		const char = string[i]!;
 		if (char === ',') {
 			separator = 'comma';
 		} else if (LINE_SEPARATORS.test(char)) {
 			separator = 'new-line';
 		} else if (!SPACE_CHARS.test(char)) {
-			return [i, separator];
+			const afterComment = trySkipComment(string, i);
+			if (afterComment == null) {
+				return [i, separator];
+			}
+			i = afterComment;
+			continue;
 		}
+		i++;
 	}
 	throw new TypeError(`Non whitespace character not found`);
+}
+
+function trySkipComment(string: string, start: number): number | undefined {
+	if (string[start] !== '/') {
+		return;
+	}
+
+	const afterSlash = start + 1;
+	if (string[afterSlash] === '/') {
+		let i = afterSlash + 1;
+		for (; i < string.length; i++) {
+			if (LINE_SEPARATORS.test(string[i]!)) {
+				return i;
+			}
+		}
+		return i;
+	} else if (string[afterSlash] === '*') {
+		for (let i = afterSlash + 1; i < string.length; i++) {
+			if (string[i] === '*' && string[i + 1] === '/') {
+				return i + 2;
+			}
+		}
+		throw new TypeError('Unterminated block comment');
+	}
 }
 
 const keywords: readonly string[] = [
