@@ -42,10 +42,14 @@ describe('conventional keywords', () => {
 });
 
 describe('identifiers', () => {
-	const identifierCases: readonly [string, string][] = [
-		// new keywords
+	const usedKeywordCases: readonly [string, string][] = [
 		['case', 'case_'],
 		['default', 'default_'],
+		['do', 'do_'],
+		['__AVT', '__AVT_'],
+	];
+
+	const unusedKeywordCases: readonly [string, string][] = [
 		['as', 'as_'],
 		['async', 'async_'],
 		['await', 'await_'],
@@ -53,7 +57,6 @@ describe('identifiers', () => {
 		['component', 'component_'],
 		['constructor', 'constructor_'],
 		['dictionary', 'dictionary_'],
-		['do', 'do_'],
 		['enum', 'enum_'],
 		['finally', 'finally_'],
 		['hash', 'hash_'],
@@ -75,12 +78,19 @@ describe('identifiers', () => {
 		['yield', 'yield_'],
 		['is', 'is_'],
 		['new', 'new_'],
+	];
 
-		// not keywords
+	const notKeywordCases: readonly [string, string][] = [
 		['_', '_'],
 		['__', '__'],
 		['foo_', 'foo_'],
 		['case_', 'case__'],
+	];
+
+	const identifierCases: readonly [string, string][] = [
+		...usedKeywordCases,
+		...unusedKeywordCases,
+		...notKeywordCases,
 	];
 
 	const scriptCases: readonly [string, (identifier: string) => string][] = [
@@ -113,5 +123,21 @@ describe('identifiers', () => {
 		const script = builder(identifier);
 		const expected = builder(expectedIdentifier);
 		transpileAndValidate(script, expected);
+	});
+
+	test.each(usedKeywordCases)('$0 as object key', (identifier) => {
+		const script = `{ ${identifier}: 0 }`;
+		transpileAndValidate(script, script);
+	});
+
+	test.each(unusedKeywordCases)('$0 as object key', (identifier) => {
+		const script = `{ ${identifier}: 0 }`;
+		const expected = `eval{let __AVT={}; __AVT["${identifier}"]= 0; __AVT}`;
+		transpileAndValidate(script, expected);
+	});
+
+	test.each(notKeywordCases)('$0 as object key', (identifier) => {
+		const script = `{ ${identifier}: 0 }`;
+		transpileAndValidate(script, script);
 	});
 });

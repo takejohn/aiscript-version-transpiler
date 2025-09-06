@@ -323,9 +323,16 @@ function trySkipComment(string: string, start: number): number | undefined {
 	}
 }
 
-const keywords: readonly string[] = [
+export const RESERVED_WORD_FOR_OBJ = '__AVT';
+
+const usedKeywords: readonly string[] = [
 	'case',
 	'default',
+	'do',
+	RESERVED_WORD_FOR_OBJ, // for object key replacement
+];
+
+const unusedKeywords: readonly string[] = [
 	'as',
 	'async',
 	'await',
@@ -333,7 +340,6 @@ const keywords: readonly string[] = [
 	'component',
 	'constructor',
 	'dictionary',
-	'do',
 	'enum',
 	'finally',
 	'hash',
@@ -357,6 +363,11 @@ const keywords: readonly string[] = [
 	'new',
 ];
 
+const keywords: readonly string[] = [
+	...usedKeywords,
+	...unusedKeywords,
+];
+
 const COLON = ':';
 
 export function replaceNameWithNamespace(name: string): string {
@@ -366,6 +377,14 @@ export function replaceNameWithNamespace(name: string): string {
 
 export function isKeyword(name: string): boolean {
 	return keywords.includes(name);
+}
+
+export function isUsedKeyword(name: string): boolean {
+	return usedKeywords.includes(name);
+}
+
+export function isUnusedKeyword(name: string): boolean {
+	return unusedKeywords.includes(name);
 }
 
 export function replaceName(name: string): string {

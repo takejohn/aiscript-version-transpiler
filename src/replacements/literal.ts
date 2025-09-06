@@ -1,10 +1,22 @@
 import type { Ast } from 'aiscript@0.19.0';
 import { ReplacementsBuilder, getActualLocation } from './main.js';
-import { includesSeparator, replaceLineSeparators, strictIndexOf, strictLastIndexOf } from '../utils.js';
+import {
+	findNextItem,
+	findNonWhitespaceCharacter,
+	includesSeparator,
+	isKeyword,
+	isUnusedKeyword,
+	replaceLineSeparators,
+	RESERVED_WORD_FOR_OBJ,
+	strictIndexOf,
+	strictLastIndexOf,
+} from '../utils.js';
 
 const tmplEscapableChars = ['{', '}', '`'];
 const LEFT_BRACE = '{';
+const RIGHT_BRACE = '}';
 const COLON = ':';
+const COMMA = ',';
 
 export function replaceTmpl(node: Ast.Tmpl, script: string): string {
 	const loc = getActualLocation(node, script);
@@ -88,6 +100,10 @@ function replaceStringContent(original: string, escapableChars: readonly string[
 }
 
 export function replaceObj(node: Ast.Obj, script: string): string {
+	if (includesReservedWord(node.value.keys())) {
+		return replaceObjWithReservedWordKey(node, script);
+	}
+
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
@@ -110,6 +126,67 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 
 		lastEnd = valueLoc.end + 1;
 	}
+
+	return builder.execute();
+}
+
+function includesReservedWord(keys: Iterable<string>): boolean {
+	for (const key of keys) {
+		if (isUnusedKeyword(key)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function replaceObjWithReservedWordKey(node: Ast.Obj, script: string): string {
+	const loc = getActualLocation(node, script);
+	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
+
+	const leftBraceEnd = loc.start + LEFT_BRACE.length;
+	builder.addReplacement(loc.start, leftBraceEnd, () => `eval{let ${RESERVED_WORD_FOR_OBJ}={};`);
+
+	let entryStart = findNonWhitespaceCharacter(script, leftBraceEnd);
+	for (const [key, value] of node.value.entries()) {
+		if (!script.startsWith(key, entryStart)) {
+			throw new TypeError(`Expected key: ${key}`);
+		}
+
+		const valueLoc = getActualLocation(value, script, true);
+
+		const [nextEntryStart, hasSeparator] = findNextItem(script, valueLoc.end + 1);
+
+		const keyEnd = entryStart + key.length;
+		if (isKeyword(key)) {
+			builder.addReplacement(entryStart, keyEnd, () => `${RESERVED_WORD_FOR_OBJ}["${key}"]`);
+		} else {
+			builder.addReplacement(entryStart, keyEnd, () => `${RESERVED_WORD_FOR_OBJ}.${key}`);
+		}
+
+		const colonStart = strictIndexOf(script, COLON, keyEnd);
+		builder.addReplacement(keyEnd, colonStart, replaceLineSeparators);
+
+		const colonEnd = colonStart + COLON.length;
+		builder.addReplacement(colonStart, colonEnd, () => '=');
+
+		builder.addReplacement(colonEnd, valueLoc.start, replaceLineSeparators);
+
+		builder.addNodeReplacement(value);
+
+		if (hasSeparator === 'comma') {
+			const commaStart = strictIndexOf(script, COMMA, valueLoc.end);
+			builder.addReplacement(commaStart, commaStart + COMMA.length, () => ';');
+		} else if (hasSeparator === 'new-line') {
+			builder.addReplacement(valueLoc.end + 1, nextEntryStart, (original) => original.replaceAll(',', ''));
+		} else {
+			builder.addInsertion(valueLoc.end + 1, ';');
+		}
+
+		entryStart = nextEntryStart;
+	}
+
+	const rightBraceEnd = entryStart + RIGHT_BRACE.length;
+	builder.addReplacement(entryStart, rightBraceEnd, () => `${RESERVED_WORD_FOR_OBJ}}`);
 
 	return builder.execute();
 }

@@ -95,6 +95,56 @@ describe('function call parameters', () => {
 	});
 });
 
+describe('object with reserved word key', () => {
+	test('comma separated', () => {
+		const script = '{ a: 0, public: 1, b: 2 }';
+		const expected = 'eval{let __AVT={}; __AVT.a= 0; __AVT["public"]= 1; __AVT.b= 2; __AVT}';
+		transpileAndValidate(script, expected);
+	});
+
+	test('line separated', () => {
+		const script = dedent`
+			{
+				a: 0
+				public: 1
+				b: 2
+			}
+		`;
+		const expected = dedent`
+			eval{let __AVT={};
+				__AVT.a= 0
+				__AVT["public"]= 1
+				__AVT.b= 2
+			__AVT}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('comma + line separated', () => {
+		const script = dedent`
+			{
+				a: 0,
+				public: 1,
+				b: 2,
+			}
+		`;
+		const expected = dedent`
+			eval{let __AVT={};
+				__AVT.a= 0
+				__AVT["public"]= 1
+				__AVT.b= 2
+			__AVT}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('space separated', () => {
+		const script = '{ a: 0 public: 1 b: 2 }';
+		const expected = 'eval{let __AVT={}; __AVT.a= 0; __AVT["public"]= 1; __AVT.b= 2; __AVT}';
+		transpileAndValidate(script, expected);
+	});
+});
+
 describe('line comment between', () => {
 	test('call', () => {
 		const script = dedent`
