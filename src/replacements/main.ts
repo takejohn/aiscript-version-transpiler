@@ -287,7 +287,7 @@ export function getActualLocation(node: Ast.Node, script: string, includeEnclosi
 			if (lastArg != null) {
 				end = Math.max(getActualLocation(lastArg, script, true).end, loc.end);
 			} else {
-				end = targetLocation.end;
+				end = loc.end;
 			}
 			return { start, end };
 		}

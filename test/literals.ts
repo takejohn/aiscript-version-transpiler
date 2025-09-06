@@ -154,9 +154,15 @@ describe('arr', () => {
 		transpileAndValidate(script, expected);
 	});
 
-	test.only('space separated with parentheses enclosing item', () => {
+	test('space separated, with parentheses enclosing item', () => {
 		const script = '[(-1) 1]';
 		const expected = '[(-1), 1]';
+		transpileAndValidate(script, expected);
+	});
+
+	test('space separated, with function call item', () => {
+		const script = '[f() 0]';
+		const expected = '[f(), 0]';
 		transpileAndValidate(script, expected);
 	});
 });
