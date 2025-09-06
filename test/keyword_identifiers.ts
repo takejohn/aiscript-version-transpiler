@@ -49,7 +49,21 @@ describe('identifiers', () => {
 		['__AVT', '__AVT_'],
 	];
 
-	const unusedKeywordCases: readonly [string, string][] = [
+	const conventionalUnusedKeywordCases: readonly [string, string][] = [
+		['attr', 'attr_'],
+		['attribute', 'attribute_'],
+		['class', 'class_'],
+		['export', 'export_'],
+		['fn', 'fn_'],
+		['static', 'static_'],
+		['struct', 'struct_'],
+		['import', 'import_'],
+		['meta', 'meta_'],
+		['module', 'module_'],
+		['namespace', 'namespace_'],
+	];
+
+	const newUnusedKeywordCases: readonly [string, string][] = [
 		['as', 'as_'],
 		['async', 'async_'],
 		['await', 'await_'],
@@ -80,6 +94,11 @@ describe('identifiers', () => {
 		['new', 'new_'],
 	];
 
+	const unusedKeywordCases: readonly [string, string][] = [
+		...conventionalUnusedKeywordCases,
+		...newUnusedKeywordCases,
+	];
+
 	const notKeywordCases: readonly [string, string][] = [
 		['_', '_'],
 		['__', '__'],
@@ -89,7 +108,7 @@ describe('identifiers', () => {
 
 	const identifierCases: readonly [string, string][] = [
 		...usedKeywordCases,
-		...unusedKeywordCases,
+		...newUnusedKeywordCases,
 		...notKeywordCases,
 	];
 

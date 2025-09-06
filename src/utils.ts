@@ -356,7 +356,21 @@ const usedKeywords: readonly string[] = [
 	RESERVED_WORD_FOR_OBJ, // for object key replacement
 ];
 
-const unusedKeywords: readonly string[] = [
+const conventionalUnusedKeywords: readonly string[] = [
+	'attr',
+	'attribute',
+	'class',
+	'export',
+	'fn',
+	'static',
+	'struct',
+	'import',
+	'meta',
+	'module',
+	'namespace',
+];
+
+const newUnusedKeywords: readonly string[] = [
 	'as',
 	'async',
 	'await',
@@ -385,6 +399,11 @@ const unusedKeywords: readonly string[] = [
 	'yield',
 	'is',
 	'new',
+];
+
+const unusedKeywords: readonly string[] = [
+	...conventionalUnusedKeywords,
+	...newUnusedKeywords,
 ];
 
 const keywords: readonly string[] = [
