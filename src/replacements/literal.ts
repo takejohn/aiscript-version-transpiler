@@ -114,7 +114,10 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 	for (const [key, value] of node.value) {
 		const valueLoc = getActualLocation(value, script, true);
 
-		const nextEntryStart = findNextItem(script, valueLoc.end + 1)[0];
+		const [nextEntryStart, separator] = findNextItem(script, valueLoc.end + 1);
+		if (separator == null && !script.startsWith(RIGHT_BRACE, nextEntryStart)) {
+			builder.addInsertion(valueLoc.end + 1, ',');
+		}
 		const semicolonStart = getSemicolonSeparator(script, valueLoc.end + 1, nextEntryStart);
 		if (semicolonStart != null) {
 			builder.addReplacement(semicolonStart, semicolonStart + 1, () => ',');

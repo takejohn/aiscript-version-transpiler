@@ -103,13 +103,13 @@ describe('obj', () => {
 		transpileAndValidate(script, expected);
 	});
 
-	test.only('semicolon separated', () => {
+	test('semicolon separated', () => {
 		const script = '{ a: 0; b: 1 }';
 		const expected = '{ a: 0, b: 1 }';
 		transpileAndValidate(script, expected);
 	});
 
-	test.only('semicolon + line separated', () => {
+	test('semicolon + line separated', () => {
 		const script = dedent`
 			{
 				a: 0;
