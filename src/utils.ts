@@ -299,6 +299,24 @@ export function findNextItem(string: string, start: number): [number, 'comma' | 
 	throw new TypeError(`Non whitespace character not found`);
 }
 
+export function replaceAllIgnoringComments(string: string, searchString: string, replacement: string): string {
+	let result = '';
+	for (let i = 0; i < string.length;) {
+		const afterComment = trySkipComment(string, i);
+		if (afterComment != null) {
+			result += string.slice(i, afterComment);
+			i = afterComment;
+		} else if (string.startsWith(searchString, i)) {
+			result += replacement;
+			i += searchString.length;
+		} else {
+			result += string[i]!;
+			i++;
+		}
+	}
+	return result;
+}
+
 function trySkipComment(string: string, start: number): number | undefined {
 	if (string[start] !== '/') {
 		return;

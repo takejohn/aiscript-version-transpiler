@@ -6,6 +6,7 @@ import {
 	includesSeparator,
 	isKeyword,
 	isUnusedKeyword,
+	replaceAllIgnoringComments,
 	replaceLineSeparators,
 	RESERVED_WORD_FOR_OBJ,
 	strictIndexOf,
@@ -177,7 +178,7 @@ function replaceObjWithReservedWordKey(node: Ast.Obj, script: string): string {
 			const commaStart = strictIndexOf(script, COMMA, valueLoc.end);
 			builder.addReplacement(commaStart, commaStart + COMMA.length, () => ';');
 		} else if (hasSeparator === 'new-line') {
-			builder.addReplacement(valueLoc.end + 1, nextEntryStart, (original) => original.replaceAll(',', ''));
+			builder.addReplacement(valueLoc.end + 1, nextEntryStart, (original) => replaceAllIgnoringComments(original, ',', ''));
 		} else {
 			builder.addInsertion(valueLoc.end + 1, ';');
 		}
