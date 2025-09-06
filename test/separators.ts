@@ -144,6 +144,30 @@ describe('object with reserved word key', () => {
 		transpileAndValidate(script, expected);
 	});
 
+	test('semicolon + line separated', () => {
+		const script = dedent`
+			{
+				a: 0;
+				public: 1;
+				b: 2;
+			}
+		`;
+		const expected = dedent`
+			eval{let __AVT={};
+				__AVT.a= 0;
+				__AVT["public"]= 1;
+				__AVT.b= 2;
+			__AVT}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('semicolon separated', () => {
+		const script = '{ a: 0; public: 1; b: 2 }';
+		const expected = 'eval{let __AVT={}; __AVT.a= 0; __AVT["public"]= 1; __AVT.b= 2; __AVT}';
+		transpileAndValidate(script, expected);
+	});
+
 	test('line separated with comments', () => {
 		const script = dedent`
 			{

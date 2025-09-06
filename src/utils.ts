@@ -278,14 +278,16 @@ export function includesSeparator(string: string, start = 0, end = string.length
 	return false;
 }
 
-export function findNextItem(string: string, start: number): [number, 'comma' | 'new-line' | null] {
-	let separator: 'comma' | 'new-line' | null = null;
+export function findNextItem(string: string, start: number): [number, 'comma' | 'new-line' | 'semicolon' | null] {
+	let separator: 'comma' | 'new-line' | 'semicolon' | null = null;
 	for (let i = start; i < string.length;) {
 		const char = string[i]!;
 		if (char === ',') {
 			separator = 'comma';
 		} else if (LINE_SEPARATORS.test(char)) {
 			separator = 'new-line';
+		} else if (char === ';') {
+			separator = 'semicolon';
 		} else if (!SPACE_CHARS.test(char)) {
 			const afterComment = trySkipComment(string, i);
 			if (afterComment == null) {
@@ -317,7 +319,7 @@ export function replaceAllIgnoringComments(string: string, searchString: string,
 	return result;
 }
 
-function trySkipComment(string: string, start: number): number | undefined {
+export function trySkipComment(string: string, start: number): number | undefined {
 	if (string[start] !== '/') {
 		return;
 	}

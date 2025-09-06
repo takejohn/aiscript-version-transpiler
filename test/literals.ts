@@ -1,5 +1,6 @@
 import { describe, test } from 'vitest';
 import { transpileAndValidate } from './test_utils';
+import dedent from 'ts-dedent';
 
 describe('tmpl', () => {
 	test('backslash', () => {
@@ -89,7 +90,7 @@ describe('obj', () => {
 	});
 
 	test('line separated', () => {
-		const script = `{
+		const script = dedent`{
 			a: 0
 			b: 1
 		}`;
@@ -99,6 +100,28 @@ describe('obj', () => {
 	test('space separated', () => {
 		const script = '{ a: 0 b: 1 }';
 		const expected = '{ a: 0, b: 1 }';
+		transpileAndValidate(script, expected);
+	});
+
+	test.only('semicolon separated', () => {
+		const script = '{ a: 0; b: 1 }';
+		const expected = '{ a: 0, b: 1 }';
+		transpileAndValidate(script, expected);
+	});
+
+	test.only('semicolon + line separated', () => {
+		const script = dedent`
+			{
+				a: 0;
+				b: 1;
+			}
+		`;
+		const expected = dedent`
+			{
+				a: 0,
+				b: 1,
+			}
+		`;
 		transpileAndValidate(script, expected);
 	});
 

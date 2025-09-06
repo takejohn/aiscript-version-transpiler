@@ -11,6 +11,7 @@ import {
 	RESERVED_WORD_FOR_OBJ,
 	strictIndexOf,
 	strictLastIndexOf,
+	trySkipComment,
 } from '../utils.js';
 
 const tmplEscapableChars = ['{', '}', '`'];
@@ -108,15 +109,18 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
-	let lastEnd: number | undefined;
+	const leftBraceEnd = loc.start + 1;
+	let entryStart = findNonWhitespaceCharacter(script, leftBraceEnd);
 	for (const [key, value] of node.value) {
 		const valueLoc = getActualLocation(value, script, true);
-		const keyStart = strictIndexOf(script, key, lastEnd ?? loc.start + LEFT_BRACE.length);
-		if (lastEnd != null && !includesSeparator(script, lastEnd, keyStart)) {
-			builder.addInsertion(lastEnd, ',');
+
+		const nextEntryStart = findNextItem(script, valueLoc.end + 1)[0];
+		const semicolonStart = getSemicolonSeparator(script, valueLoc.end + 1, nextEntryStart);
+		if (semicolonStart != null) {
+			builder.addReplacement(semicolonStart, semicolonStart + 1, () => ',');
 		}
 
-		const keyEnd = keyStart + key.length;
+		const keyEnd = entryStart + key.length;
 		const colonStart = strictIndexOf(script, COLON, keyEnd);
 		builder.addReplacement(keyEnd, colonStart, replaceLineSeparators);
 
@@ -125,7 +129,7 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 
 		builder.addNodeReplacement(value);
 
-		lastEnd = valueLoc.end + 1;
+		entryStart = nextEntryStart;
 	}
 
 	return builder.execute();
@@ -180,7 +184,9 @@ function replaceObjWithReservedWordKey(node: Ast.Obj, script: string): string {
 		} else if (hasSeparator === 'new-line') {
 			builder.addReplacement(valueLoc.end + 1, nextEntryStart, (original) => replaceAllIgnoringComments(original, ',', ''));
 		} else {
-			builder.addInsertion(valueLoc.end + 1, ';');
+			if (getSemicolonSeparator(script, valueLoc.end + 1, nextEntryStart) == null) {
+				builder.addInsertion(valueLoc.end + 1, ';');
+			}
 		}
 
 		entryStart = nextEntryStart;
@@ -190,6 +196,20 @@ function replaceObjWithReservedWordKey(node: Ast.Obj, script: string): string {
 	builder.addReplacement(entryStart, rightBraceEnd, () => `${RESERVED_WORD_FOR_OBJ}}`);
 
 	return builder.execute();
+}
+
+function getSemicolonSeparator(script: string, start: number, end: number): number | undefined {
+	for (let i = start; i < end;) {
+		if (script[i] === ';') {
+			return i;
+		}
+		const afterComment = trySkipComment(script, i);
+		if (afterComment != null) {
+			i = afterComment;
+		} else {
+			i++;
+		}
+	}
 }
 
 export function replaceArr(node: Ast.Arr, script: string): string {
