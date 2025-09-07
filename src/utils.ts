@@ -266,22 +266,6 @@ export function replaceLineSeparators(string: string): string {
 	return result;
 }
 
-export function includesSeparator(string: string, start = 0, end = string.length): boolean {
-	for (let i = start; i < end;) {
-		const char = string[i]!;
-		if (LINE_SEPARATORS.test(char) || char === ',') {
-			return true;
-		}
-		const afterComment = trySkipComment(string, i);
-		if (afterComment != null) {
-			i = afterComment;
-		} else {
-			i++;
-		}
-	}
-	return false;
-}
-
 export function findNextItem(string: string, start: number): [number, 'comma' | 'new-line' | 'semicolon' | null] {
 	let separator: 'comma' | 'new-line' | 'semicolon' | null = null;
 	for (let i = start; i < string.length;) {

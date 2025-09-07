@@ -1,6 +1,6 @@
 import type { Ast } from 'aiscript@0.19.0';
 import { ReplacementsBuilder, getActualLocation } from './main.js';
-import { includesSeparator, findNonWhitespaceCharacter, replaceLineSeparators, strictLastIndexOf } from '../utils.js';
+import { findNonWhitespaceCharacter, replaceLineSeparators, strictLastIndexOf, findNextItem } from '../utils.js';
 
 const MATCH_KEYWORD = 'match';
 const ARROW = '=>';
@@ -31,8 +31,8 @@ export function replaceMatch(node: Ast.Match, script: string): string {
 		replaceArmRightHand(caseArm.a, builder, script);
 
 		const caseArmEnd = getActualLocation(caseArm.a, script, true).end + 1;
-		const nextTokenStart = findNonWhitespaceCharacter(script, caseArmEnd);
-		if (!script.startsWith('}', nextTokenStart) && !includesSeparator(script, caseArmEnd, nextTokenStart)) {
+		const [nextTokenStart, separator] = findNextItem(script, caseArmEnd);
+		if (!script.startsWith('}', nextTokenStart) && separator !== 'comma' && separator !== 'new-line') {
 			builder.addInsertion(caseArmEnd, ',');
 		}
 	}

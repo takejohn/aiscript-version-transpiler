@@ -1,6 +1,6 @@
 import type { Ast } from 'aiscript@0.19.0';
 import { ReplacementsBuilder, getActualLocation } from './main.js';
-import { findNextItem } from '../utils.js';
+import { findNextItem, replaceLineSeparators, strictIndexOf } from '../utils.js';
 
 export function replaceCall(node: Ast.Call, script: string): string {
 	const parenthesesLoc = node.loc;
@@ -25,7 +25,10 @@ export function replaceCall(node: Ast.Call, script: string): string {
 				builder.addNodeReplacement(arg, true);
 				const argLoc = getActualLocation(arg, script, true);
 				const [nextTokenStart, separator] = findNextItem(script, argLoc.end + 1);
-				if (separator == null && !script.startsWith(')', nextTokenStart)) {
+				if (separator === 'comma') {
+					const commaStart = strictIndexOf(script, ',', argLoc.end + 1);
+					builder.addReplacement(argLoc.end + 1, commaStart, replaceLineSeparators);
+				} else if (separator !== 'new-line' && !script.startsWith(')', nextTokenStart)) {
 					builder.addInsertion(argLoc.end + 1, ',');
 				}
 			}

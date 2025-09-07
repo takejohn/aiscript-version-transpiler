@@ -25,6 +25,21 @@ describe('function arguments', () => {
 			const expected = '@(a, b, c) {}';
 			transpileAndValidate(script, expected);
 		});
+
+		test('line + comma separated', () => {
+			const script = dedent`
+				@(
+					a
+					, b
+				) {}
+			`;
+			const expected = dedent`
+				@(
+					a , b
+				) {}
+			`;
+			transpileAndValidate(script, expected);
+		});
 	});
 
 	describe('function definition', () => {
@@ -47,6 +62,21 @@ describe('function arguments', () => {
 		test('space separated', () => {
 			const script = '@f(a b c) {}';
 			const expected = '@f(a, b, c) {}';
+			transpileAndValidate(script, expected);
+		});
+
+		test('line + comma separated', () => {
+			const script = dedent`
+				@f(
+					a
+					, b
+				) {}
+			`;
+			const expected = dedent`
+				@f(
+					a , b
+				) {}
+			`;
 			transpileAndValidate(script, expected);
 		});
 	});
@@ -97,6 +127,38 @@ describe('function call parameters', () => {
 	test('enclosing parentheses, space separated', () => {
 		const script = '(f(a b))';
 		const expected = '(f(a, b))';
+		transpileAndValidate(script, expected);
+	});
+
+	test('line + comma separated', () => {
+		const script = dedent`
+			f(
+				0
+				, 1
+			)
+		`;
+		const expected = dedent`
+			f(
+				0 , 1
+			)
+		`;
+		transpileAndValidate(script, expected);
+	});
+});
+
+describe('object', () => {
+	test('line + comma separated', () => {
+		const script = dedent`
+			{
+				a: 0
+				, b: 1
+			}
+		`;
+		const expected = dedent`
+			{
+				a: 0 , b: 1
+			}
+		`;
 		transpileAndValidate(script, expected);
 	});
 });
@@ -188,6 +250,54 @@ describe('object with reserved word key', () => {
 				__AVT["public"]= 1 /* , */
 				__AVT.b= 2
 			__AVT}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('line + comma separated', () => {
+		const script = dedent`
+			{
+				a: 0
+				, public: 1
+				, b: 2
+			}
+		`;
+		const expected = dedent`
+			eval{let __AVT={};
+				__AVT.a= 0
+				; __AVT["public"]= 1
+				; __AVT.b= 2
+			__AVT}
+		`;
+		transpileAndValidate(script, expected);
+	});
+});
+
+describe('arr', () => {
+	test('line + comma separated', () => {
+		const script = dedent`
+			[
+				0
+				, 1
+			]
+		`;
+		const expected = dedent`
+			[
+				0 , 1
+			]
+		`;
+		transpileAndValidate(script, expected);
+	});
+});
+
+describe('fn type', () => {
+	test('line + comma separated', () => {
+		const script = dedent`
+			let f: @(num
+			, num) => num = null
+		`;
+		const expected = dedent`
+			let f: @(num , num) => num = null
 		`;
 		transpileAndValidate(script, expected);
 	});

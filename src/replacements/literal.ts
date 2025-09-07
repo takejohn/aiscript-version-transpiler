@@ -114,7 +114,10 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 		const valueLoc = getActualLocation(value, script, true);
 
 		const [nextEntryStart, separator] = findNextItem(script, valueLoc.end + 1);
-		if (separator == null && !script.startsWith(RIGHT_BRACE, nextEntryStart)) {
+		if (separator === 'comma') {
+			const commaStart = strictIndexOf(script, ',', valueLoc.end + 1);
+			builder.addReplacement(valueLoc.end + 1, commaStart, replaceLineSeparators);
+		} else if (separator == null && !script.startsWith(RIGHT_BRACE, nextEntryStart)) {
 			builder.addInsertion(valueLoc.end + 1, ',');
 		}
 		const semicolonStart = getSemicolonSeparator(script, valueLoc.end + 1, nextEntryStart);
@@ -222,7 +225,10 @@ export function replaceArr(node: Ast.Arr, script: string): string {
 		builder.addNodeReplacement(item);
 		const itemLoc = getActualLocation(item, script, true);
 		const [nextTokenStart, separator] = findNextItem(script, itemLoc.end + 1);
-		if (separator == null && !script.startsWith(']', nextTokenStart)) {
+		if (separator === 'comma') {
+			const commaStart = strictIndexOf(script, ',', itemLoc.end + 1);
+			builder.addReplacement(itemLoc.end + 1, commaStart, replaceLineSeparators);
+		} else if (separator !== 'new-line' && !script.startsWith(']', nextTokenStart)) {
 			builder.addInsertion(itemLoc.end + 1, ',');
 		}
 	}

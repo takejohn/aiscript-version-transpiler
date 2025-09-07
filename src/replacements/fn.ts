@@ -67,7 +67,10 @@ function replaceArgs(builder: ReplacementsBuilder, script: string, start: number
 	let [currentArgStart, separator] = findNextItem(script, prevArgEnd);
 
 	while (!script.startsWith(RIGHT_PARENTHESIS, currentArgStart)) {
-		if (!separator) {
+		if (separator === 'comma') {
+			const commaStart = strictIndexOf(script, ',', prevArgEnd);
+			builder.addReplacement(prevArgEnd, commaStart, replaceLineSeparators);
+		} else if (separator !== 'new-line') {
 			builder.addInsertion(prevArgEnd, ',');
 		}
 
