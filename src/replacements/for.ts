@@ -20,10 +20,11 @@ function replaceForTimes(node: Ast.For, script: string): string {
 		throw new TypeError('times should exist');
 	}
 	const loc = getActualLocation(node, script);
-	const timesLoc = getActualLocation(node.times, script);
+	const timesLoc = getActualLocation(node.times, script, true);
 	const forLoc = getActualLocation(node.for, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	builder.addReplacement(loc.start + FOR_KEYWORD.length, timesLoc.start, replaceLineSeparators);
+	builder.addNodeReplacement(node.times);
 	builder.addReplacement(timesLoc.end + 1, forLoc.start, replaceLineSeparators);
 	builder.addNodeReplacement(node.for);
 	return builder.execute();

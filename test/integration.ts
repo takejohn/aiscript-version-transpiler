@@ -25,3 +25,17 @@ describe('each', () => {
 		transpileAndValidate(script, expected);
 	});
 });
+
+describe('for', () => {
+	test('times, times: call (space separated)', () => {
+		const script = 'for f(0 1) {}';
+		const expected = 'for f(0, 1) {}';
+		transpileAndValidate(script, expected);
+	});
+
+	test('times with parentheses, times: call (space separated)', () => {
+		const script = 'for (f(0 1)) {}';
+		const expected = 'for (f(0, 1)) {}';
+		transpileAndValidate(script, expected);
+	});
+});
