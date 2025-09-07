@@ -4,11 +4,11 @@ import { findNonWhitespaceCharacter, replaceLineSeparators } from '../utils.js';
 
 const LOOP_KEYWORD = 'loop';
 
-export function replaceLoop(node: Ast.Loop, script: string): string {
+export function replaceLoop(node: Ast.Loop, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	const bodyStart = findNonWhitespaceCharacter(script, loc.start + LOOP_KEYWORD.length);
 	builder.addReplacement(loc.start + LOOP_KEYWORD.length, bodyStart, replaceLineSeparators);
-	builder.addNodeReplacements(node.statements);
+	builder.addNodeReplacements(node.statements, ancestors);
 	return builder.execute();
 }

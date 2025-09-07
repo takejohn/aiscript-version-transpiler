@@ -10,19 +10,19 @@ const VAR_KEYWORD = 'var';
 const COLON = ':';
 const EQUAL_SIGN = '=';
 
-export function replaceDefinition(node: Ast.Definition, script: string): string {
+export function replaceDefinition(node: Ast.Definition, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	if (script.at(loc.start) === AT_SIGN) {
 		if (node.expr.type !== 'fn') {
 			throw new TypeError('Expected function');
 		}
-		return replaceFn(node.expr, script, node.name);
+		return replaceFn(node.expr, script, ancestors, node.name);
 	} else {
-		return replaceVarDef(node, script);
+		return replaceVarDef(node, script, ancestors);
 	}
 }
 
-function replaceVarDef(node: Ast.Definition, script: string): string {
+function replaceVarDef(node: Ast.Definition, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
@@ -51,6 +51,6 @@ function replaceVarDef(node: Ast.Definition, script: string): string {
 	const equalStart = strictIndexOf(script, EQUAL_SIGN, tokenBeforeEqualEnd);
 	builder.addReplacement(tokenBeforeEqualEnd, equalStart, replaceLineSeparators);
 
-	builder.addNodeReplacement(node.expr);
+	builder.addNodeReplacement(node.expr, ancestors);
 	return builder.execute();
 }

@@ -5,7 +5,7 @@ import { replaceLineSeparators, replaceName, strictIndexOf } from '../utils.js';
 const COLON2 = '::';
 const LEFT_BRACE = '{';
 
-export function replaceNamespace(node: Ast.Namespace, script: string): string {
+export function replaceNamespace(node: Ast.Namespace, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	const nameStart = strictIndexOf(script, node.name, loc.start + COLON2.length);
@@ -14,6 +14,6 @@ export function replaceNamespace(node: Ast.Namespace, script: string): string {
 	builder.addReplacement(loc.start + COLON2.length, nameStart, replaceLineSeparators);
 	builder.addReplacement(nameStart, nameEnd, replaceName);
 	builder.addReplacement(nameEnd, bodyStart, replaceLineSeparators);
-	builder.addNodeReplacements(node.members);
+	builder.addNodeReplacements(node.members, ancestors);
 	return builder.execute();
 }

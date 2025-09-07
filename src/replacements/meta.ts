@@ -4,7 +4,7 @@ import { replaceLineSeparators, replaceName, strictIndexOf } from '../utils.js';
 
 const HASH3 = '###';
 
-export function replaceMeta(node: Ast.Meta, script: string): string {
+export function replaceMeta(node: Ast.Meta, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	if (node.name != null) {
@@ -12,6 +12,6 @@ export function replaceMeta(node: Ast.Meta, script: string): string {
 		builder.addReplacement(nameStart, nameStart + node.name.length, replaceName);
 		builder.addReplacement(nameStart + node.name.length, getActualLocation(node.value, script).start, replaceLineSeparators);
 	}
-	builder.addNodeReplacement(node.value);
+	builder.addNodeReplacement(node.value, ancestors);
 	return builder.execute();
 }

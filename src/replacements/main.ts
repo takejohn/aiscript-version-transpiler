@@ -15,7 +15,7 @@ import { replaceBlock } from './block.js';
 import { replaceNamespace } from './namespace.js';
 import { replaceArr, replaceObj, replaceStr, replaceTmpl } from './literal.js';
 import { replaceMeta } from './meta.js';
-import { replaceReturn } from './return.js';
+import { replaceBreak, replaceContinue, replaceReturn } from './jumpStatement.js';
 import { replaceEach } from './each.js';
 import { replaceLoop } from './loop.js';
 import { replaceAssign } from './assign.js';
@@ -52,27 +52,27 @@ export class ReplacementsBuilder {
 		this._addReplacement(start, end, content);
 	}
 
-	public addNodeReplacement(node: Ast.Node, includeEnclosingParentheses = true, parenthesesLimit?: Ast.Loc): void {
+	public addNodeReplacement(node: Ast.Node, ancestors: Ast.Node[], includeEnclosingParentheses = true, parenthesesLimit?: Ast.Loc): void {
 		const innerLoc = getActualLocation(node, this.script, false);
 		if (includeEnclosingParentheses) {
 			const outerLoc = getEnclosingParenthesesRecursive(innerLoc, this.script, parenthesesLimit) ?? innerLoc;
 			this._addReplacement(
 				outerLoc.start,
 				outerLoc.end + 1,
-				replaceNodeAndLineSeparatorsInParentheses(node, this.script, parenthesesLimit),
+				replaceNodeAndLineSeparatorsInParentheses(node, this.script, ancestors, parenthesesLimit),
 			);
 		} else {
 			this._addReplacement(
 				innerLoc.start,
 				innerLoc.end + 1,
-				replaceNode(node, this.script),
+				replaceNode(node, this.script, ancestors),
 			);
 		}
 	}
 
-	public addNodeReplacements(nodes: Iterable<Ast.Node>): void {
+	public addNodeReplacements(nodes: Iterable<Ast.Node>, ancestors: Ast.Node[]): void {
 		for (const node of nodes) {
-			this.addNodeReplacement(node);
+			this.addNodeReplacement(node, ancestors);
 		}
 	}
 
@@ -100,9 +100,9 @@ export class ReplacementsBuilder {
 	}
 }
 
-export function replaceAst(ast: Ast.Node[], script: string): string {
+export function replaceAst(ast: Ast.Node[], script: string, ancestors: Ast.Node[]): string {
 	const replacements: readonly SliceReplacement[] = ast.map((node) => {
-		const content = replaceNodeAndLineSeparatorsInParentheses(node, script);
+		const content = replaceNodeAndLineSeparatorsInParentheses(node, script, ancestors);
 		const { start, end } = getActualLocation(node, script, true);
 		return { start, end: end + 1, content };
 	});
@@ -112,13 +112,14 @@ export function replaceAst(ast: Ast.Node[], script: string): string {
 export function replaceNodeAndLineSeparatorsInParentheses(
 	node: Ast.Node,
 	script: string,
+	ancestors: Ast.Node[],
 	limit: Ast.Loc = { start: 0, end: script.length - 1 },
 ): string {
 	const nodeLoc: Ast.Loc = getActualLocation(node, script, false);
 	const parenthesisPairs = getEnclosingParenthesisPairs(nodeLoc, script, limit);
 
 	if (parenthesisPairs.length === 0) {
-		return replaceNode(node, script);
+		return replaceNode(node, script, ancestors);
 	}
 
 	const outerParentheses = parenthesisPairs.at(-1)!;
@@ -129,94 +130,101 @@ export function replaceNodeAndLineSeparatorsInParentheses(
 		builder.addReplacement(innerLoc.end + 1, parenthesisPair.end, replaceLineSeparators);
 		innerLoc = parenthesisPair;
 	}
-	builder.addNodeReplacement(node, false);
+	builder.addNodeReplacement(node, ancestors, false);
 	return builder.execute();
 }
 
-export function replaceNode(
+function replaceNode(
 	node: Ast.Node,
 	script: string,
+	ancestors: Ast.Node[],
 ): string {
+	const newAncestors = [node, ...ancestors];
+
 	switch (node.type) {
 		case 'ns': {
-			return replaceNamespace(node, script);
+			return replaceNamespace(node, script, newAncestors);
 		}
 		case 'meta': {
-			return replaceMeta(node, script);
+			return replaceMeta(node, script, newAncestors);
 		}
 		case 'def': {
-			return replaceDefinition(node, script);
+			return replaceDefinition(node, script, newAncestors);
 		}
 		case 'return': {
-			return replaceReturn(node, script);
+			return replaceReturn(node, script, newAncestors);
 		}
 		case 'each': {
-			return replaceEach(node, script);
+			return replaceEach(node, script, newAncestors);
 		}
 		case 'for': {
-			return replaceFor(node, script);
+			return replaceFor(node, script, newAncestors);
 		}
 		case 'loop': {
-			return replaceLoop(node, script);
+			return replaceLoop(node, script, newAncestors);
+		}
+		case 'break': {
+			return replaceBreak(newAncestors);
+		}
+		case 'continue': {
+			return replaceContinue(newAncestors);
 		}
 		case 'assign':
 		case 'addAssign':
 		case 'subAssign': {
-			return replaceAssign(node, script);
+			return replaceAssign(node, script, newAncestors);
 		}
 		case 'if': {
-			return replaceIf(node, script);
+			return replaceIf(node, script, newAncestors);
 		}
 		case 'fn': {
-			return replaceFn(node, script);
+			return replaceFn(node, script, newAncestors);
 		}
 		case 'match': {
-			return replaceMatch(node, script);
+			return replaceMatch(node, script, newAncestors);
 		}
 		case 'block': {
-			return replaceBlock(node, script);
+			return replaceBlock(node, script, newAncestors);
 		}
 		case 'exists': {
-			return replaceExists(node, script);
+			return replaceExists(node, script, newAncestors);
 		}
 		case 'tmpl': {
-			return replaceTmpl(node, script);
+			return replaceTmpl(node, script, newAncestors);
 		}
 		case 'str': {
 			return replaceStr(node, script);
 		}
-		case 'break':
-		case 'continue':
-		case 'num':
-		case 'bool':
-		case 'null': {
-			const loc = getActualLocation(node, script, false);
-			return script.slice(loc.start, loc.end + 1);
-		}
 		case 'obj': {
-			return replaceObj(node, script);
+			return replaceObj(node, script, newAncestors);
 		}
 		case 'arr': {
-			return replaceArr(node, script);
+			return replaceArr(node, script, newAncestors);
 		}
 		case 'not': {
-			return replaceNot(node, script);
+			return replaceNot(node, script, newAncestors);
 		}
 		case 'and':
 		case 'or': {
-			return replaceBinaryOperation(node, script);
+			return replaceBinaryOperation(node, script, newAncestors);
 		}
 		case 'identifier': {
 			return replaceIdentifier(node);
 		}
 		case 'call': {
-			return replaceCall(node, script);
+			return replaceCall(node, script, newAncestors);
 		}
 		case 'index': {
-			return replaceIndex(node, script);
+			return replaceIndex(node, script, newAncestors);
 		}
 		case 'prop': {
-			return replaceProp(node, script);
+			return replaceProp(node, script, newAncestors);
+		}
+		case 'num':
+		case 'bool':
+		case 'null': {
+			const loc = getActualLocation(node, script, false);
+			return script.slice(loc.start, loc.end + 1);
 		}
 		case 'namedTypeSource': {
 			throw new Error('Not implemented');

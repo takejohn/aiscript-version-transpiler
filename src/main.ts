@@ -4,5 +4,5 @@ import { replaceAst } from './replacements/main.js';
 
 export function transpile(script: string): string {
 	const ast = Parser.parse(script);
-	return replaceAst(ast, script);
+	return replaceAst(ast, script, []);
 }

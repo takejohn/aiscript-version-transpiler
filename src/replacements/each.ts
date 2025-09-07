@@ -8,7 +8,7 @@ const LEFT_PARENTHESIS = '(';
 const RIGHT_PARENTHESIS = ')';
 const COMMA = ',';
 
-export function replaceEach(node: Ast.Each, script: string): string {
+export function replaceEach(node: Ast.Each, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
@@ -34,7 +34,7 @@ export function replaceEach(node: Ast.Each, script: string): string {
 		builder.addInsertion(varEnd, COMMA);
 	}
 
-	builder.addNodeReplacement(node.items);
+	builder.addNodeReplacement(node.items, ancestors);
 
 	let bodyStart: number;
 	if (hasParentheses) {
@@ -45,7 +45,7 @@ export function replaceEach(node: Ast.Each, script: string): string {
 	}
 	builder.addReplacement(itemsLoc.end + 1, bodyStart, replaceLineSeparators);
 
-	builder.addNodeReplacement(node.for);
+	builder.addNodeReplacement(node.for, ancestors);
 
 	return builder.execute();
 }

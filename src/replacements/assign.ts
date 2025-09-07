@@ -4,13 +4,13 @@ import { replaceLineSeparators, strictIndexOf } from '../utils.js';
 
 const EQUAL_SIGN = '=';
 
-export function replaceAssign(node: Ast.Assign | Ast.AddAssign | Ast.SubAssign, script: string): string {
+export function replaceAssign(node: Ast.Assign | Ast.AddAssign | Ast.SubAssign, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	const destLoc = getActualLocation(node.dest, script, true);
 	const exprLoc = getActualLocation(node.expr, script, true);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
-	builder.addNodeReplacement(node.dest);
+	builder.addNodeReplacement(node.dest, ancestors);
 
 	const equalStart = strictIndexOf(script, EQUAL_SIGN, destLoc.end + 1);
 	builder.addReplacement(destLoc.end + 1, equalStart, replaceLineSeparators);
@@ -18,7 +18,7 @@ export function replaceAssign(node: Ast.Assign | Ast.AddAssign | Ast.SubAssign, 
 	const equalEnd = equalStart + EQUAL_SIGN.length;
 	builder.addReplacement(equalEnd, exprLoc.start, replaceLineSeparators);
 
-	builder.addNodeReplacement(node.expr);
+	builder.addNodeReplacement(node.expr, ancestors);
 
 	return builder.execute();
 }

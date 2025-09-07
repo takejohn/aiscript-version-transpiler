@@ -7,15 +7,15 @@ const LET_KEYWORD = 'let';
 const EQUAL_SIGN = '=';
 const COMMA = ',';
 
-export function replaceFor(node: Ast.For, script: string): string {
+export function replaceFor(node: Ast.For, script: string, ancestors: Ast.Node[]): string {
 	if (node.times != null) {
-		return replaceForTimes(node, script);
+		return replaceForTimes(node, script, ancestors);
 	} else {
-		return replaceForRange(node, script);
+		return replaceForRange(node, script, ancestors);
 	}
 }
 
-function replaceForTimes(node: Ast.For, script: string): string {
+function replaceForTimes(node: Ast.For, script: string, ancestors: Ast.Node[]): string {
 	if (node.times == null) {
 		throw new TypeError('times should exist');
 	}
@@ -24,13 +24,13 @@ function replaceForTimes(node: Ast.For, script: string): string {
 	const forLoc = getActualLocation(node.for, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	builder.addReplacement(loc.start + FOR_KEYWORD.length, timesLoc.start, replaceLineSeparators);
-	builder.addNodeReplacement(node.times);
+	builder.addNodeReplacement(node.times, ancestors);
 	builder.addReplacement(timesLoc.end + 1, forLoc.start, replaceLineSeparators);
-	builder.addNodeReplacement(node.for);
+	builder.addNodeReplacement(node.for, ancestors);
 	return builder.execute();
 }
 
-function replaceForRange(node: Ast.For, script: string): string {
+function replaceForRange(node: Ast.For, script: string, ancestors: Ast.Node[]): string {
 	if (node.var == null || node.from == null || node.to == null) {
 		throw new TypeError('var, from and to should exist');
 	}
@@ -57,7 +57,7 @@ function replaceForRange(node: Ast.For, script: string): string {
 		const fromLoc = getActualLocation(node.from, script, true);
 		fromEnd = fromLoc.end + 1;
 		builder.addReplacement(tokenAfterVarStart + EQUAL_SIGN.length, fromLoc.start, replaceLineSeparators);
-		builder.addNodeReplacement(node.from);
+		builder.addNodeReplacement(node.from, ancestors);
 		tokenAfterFromStart = findNonWhitespaceCharacter(script, fromEnd);
 	} else {
 		tokenAfterFromStart = tokenAfterVarStart;
@@ -78,10 +78,10 @@ function replaceForRange(node: Ast.For, script: string): string {
 		builder.addReplacement(tokenBeforeToEnd, toLoc.start, replaceLineSeparators);
 	}
 
-	builder.addNodeReplacement(node.to);
+	builder.addNodeReplacement(node.to, ancestors);
 
 	const forLoc = getActualLocation(node.for, script);
 	builder.addReplacement(toLoc.end + 1, forLoc.start, replaceLineSeparators);
-	builder.addNodeReplacement(node.for);
+	builder.addNodeReplacement(node.for, ancestors);
 	return builder.execute();
 }

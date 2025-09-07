@@ -2,11 +2,11 @@ import type { Ast } from 'aiscript@0.19.0';
 import { getActualLocation, ReplacementsBuilder } from './main.js';
 import { isKeyword } from '../utils.js';
 
-export function replaceProp(node: Ast.Prop, script: string): string {
+export function replaceProp(node: Ast.Prop, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
-	builder.addNodeReplacement(node.target);
+	builder.addNodeReplacement(node.target, ancestors);
 
 	if (isKeyword(node.name)) {
 		const targetLoc = getActualLocation(node.target, script);

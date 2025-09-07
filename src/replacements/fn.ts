@@ -16,7 +16,7 @@ const RIGHT_PARENTHESIS = ')';
 const LEFT_BRACE = '{';
 const COLON = ':';
 
-export function replaceFn(node: Ast.Fn, script: string, name?: string): string {
+export function replaceFn(node: Ast.Fn, script: string, ancestors: Ast.Node[], name?: string): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
@@ -58,7 +58,7 @@ export function replaceFn(node: Ast.Fn, script: string, name?: string): string {
 
 	const bodyStart = strictIndexOf(script, LEFT_BRACE, tokenBeforeBodyEnd);
 	builder.addReplacement(tokenBeforeBodyEnd, bodyStart, replaceLineSeparators);
-	builder.addNodeReplacements(node.children);
+	builder.addNodeReplacements(node.children, ancestors);
 	return builder.execute();
 }
 

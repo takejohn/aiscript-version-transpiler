@@ -19,7 +19,7 @@ const RIGHT_BRACE = '}';
 const COLON = ':';
 const COMMA = ',';
 
-export function replaceTmpl(node: Ast.Tmpl, script: string): string {
+export function replaceTmpl(node: Ast.Tmpl, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	for (let i = 0; i < node.tmpl.length; i++) {
@@ -41,7 +41,7 @@ export function replaceTmpl(node: Ast.Tmpl, script: string): string {
 			}
 			builder.addReplacement(start, end + 1, (original) => replaceStringContent(original, tmplEscapableChars));
 		} else {
-			builder.addNodeReplacement(element);
+			builder.addNodeReplacement(element, ancestors);
 		}
 	}
 	return builder.execute();
@@ -100,9 +100,9 @@ function replaceStringContent(original: string, escapableChars: readonly string[
 	return result;
 }
 
-export function replaceObj(node: Ast.Obj, script: string): string {
+export function replaceObj(node: Ast.Obj, script: string, ancestors: Ast.Node[]): string {
 	if (includesReservedWord(node.value.keys())) {
-		return replaceObjWithReservedWordKey(node, script);
+		return replaceObjWithReservedWordKey(node, script, ancestors);
 	}
 
 	const loc = getActualLocation(node, script);
@@ -132,7 +132,7 @@ export function replaceObj(node: Ast.Obj, script: string): string {
 		const colonEnd = colonStart + COLON.length;
 		builder.addReplacement(colonEnd, valueLoc.start, replaceLineSeparators);
 
-		builder.addNodeReplacement(value, true);
+		builder.addNodeReplacement(value, ancestors, true);
 
 		entryStart = nextEntryStart;
 	}
@@ -149,7 +149,7 @@ function includesReservedWord(keys: Iterable<string>): boolean {
 	return false;
 }
 
-function replaceObjWithReservedWordKey(node: Ast.Obj, script: string): string {
+function replaceObjWithReservedWordKey(node: Ast.Obj, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
@@ -181,7 +181,7 @@ function replaceObjWithReservedWordKey(node: Ast.Obj, script: string): string {
 
 		builder.addReplacement(colonEnd, valueLoc.start, replaceLineSeparators);
 
-		builder.addNodeReplacement(value);
+		builder.addNodeReplacement(value, ancestors);
 
 		if (hasSeparator === 'comma') {
 			const commaStart = strictIndexOf(script, COMMA, valueLoc.end);
@@ -217,12 +217,12 @@ function getSemicolonSeparator(script: string, start: number, end: number): numb
 	}
 }
 
-export function replaceArr(node: Ast.Arr, script: string): string {
+export function replaceArr(node: Ast.Arr, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	for (const item of node.value) {
-		builder.addNodeReplacement(item);
+		builder.addNodeReplacement(item, ancestors);
 		const itemLoc = getActualLocation(item, script, true);
 		const [nextTokenStart, separator] = findNextItem(script, itemLoc.end + 1);
 		if (separator === 'comma') {

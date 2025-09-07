@@ -9,7 +9,7 @@ describe('replaceNodeAndLineSeparatorsInParentheses', () => {
 		const script = '0';
 		const ast = Parser.parse(script);
 		const node = ast[0]!;
-		const output = replaceNodeAndLineSeparatorsInParentheses(node, script);
+		const output = replaceNodeAndLineSeparatorsInParentheses(node, script, []);
 		expect(output).toBe('0');
 	});
 
@@ -17,7 +17,7 @@ describe('replaceNodeAndLineSeparatorsInParentheses', () => {
 		const script = '(0)';
 		const ast = Parser.parse(script);
 		const node = ast[0]!;
-		const output = replaceNodeAndLineSeparatorsInParentheses(node, script);
+		const output = replaceNodeAndLineSeparatorsInParentheses(node, script, []);
 		expect(output).toBe('(0)');
 	});
 
@@ -25,7 +25,7 @@ describe('replaceNodeAndLineSeparatorsInParentheses', () => {
 		const script = '((0))';
 		const ast = Parser.parse(script);
 		const node = ast[0]!;
-		const output = replaceNodeAndLineSeparatorsInParentheses(node, script);
+		const output = replaceNodeAndLineSeparatorsInParentheses(node, script, []);
 		expect(output).toBe('((0))');
 	});
 
@@ -40,7 +40,7 @@ describe('replaceNodeAndLineSeparatorsInParentheses', () => {
 		`;
 		const ast = Parser.parse(script);
 		const node = ast[0]!;
-		const output = replaceNodeAndLineSeparatorsInParentheses(node, script);
+		const output = replaceNodeAndLineSeparatorsInParentheses(node, script, []);
 		expect(output).toBe(expected);
 	});
 
@@ -57,7 +57,7 @@ describe('replaceNodeAndLineSeparatorsInParentheses', () => {
 		`;
 		const ast = Parser.parse(script);
 		const node = ast[0]!;
-		const output = replaceNodeAndLineSeparatorsInParentheses(node, script);
+		const output = replaceNodeAndLineSeparatorsInParentheses(node, script, []);
 		expect(output).toBe(expected);
 	});
 
@@ -66,7 +66,7 @@ describe('replaceNodeAndLineSeparatorsInParentheses', () => {
 		const ast = Parser.parse(script);
 		const call = requireType(ast[0], 'call');
 		const arg = call.args[0]!;
-		const output = replaceNodeAndLineSeparatorsInParentheses(arg, script, {
+		const output = replaceNodeAndLineSeparatorsInParentheses(arg, script, [call], {
 			start: call.loc!.start + 1,
 			end: call.loc!.end - 1,
 		});
@@ -78,7 +78,7 @@ describe('replaceNodeAndLineSeparatorsInParentheses', () => {
 		const ast = Parser.parse(script);
 		const call = requireType(ast[0], 'call');
 		const arg = call.args[0]!;
-		const output = replaceNodeAndLineSeparatorsInParentheses(arg, script, {
+		const output = replaceNodeAndLineSeparatorsInParentheses(arg, script, [call], {
 			start: call.loc!.start + 1,
 			end: call.loc!.end - 1,
 		});
@@ -94,7 +94,7 @@ describe('replaceNodeAndLineSeparatorsInParentheses', () => {
 		const ast = Parser.parse(script);
 		const call = requireType(ast[0], 'call');
 		const arg = call.args[0]!;
-		const output = replaceNodeAndLineSeparatorsInParentheses(arg, script, {
+		const output = replaceNodeAndLineSeparatorsInParentheses(arg, script, [call], {
 			start: call.loc!.start + 1,
 			end: call.loc!.end - 1,
 		});
@@ -110,7 +110,7 @@ describe('replaceNodeAndLineSeparatorsInParentheses', () => {
 		const ast = Parser.parse(script);
 		const call = requireType(ast[0], 'call');
 		const arg = call.args[0]!;
-		const output = replaceNodeAndLineSeparatorsInParentheses(arg, script, {
+		const output = replaceNodeAndLineSeparatorsInParentheses(arg, script, [call], {
 			start: call.loc!.start + 1,
 			end: call.loc!.end - 1,
 		});
@@ -122,7 +122,7 @@ describe('replaceNodeAndLineSeparatorsInParentheses', () => {
 		const ast = Parser.parse(script);
 		const obj = requireType(ast[0], 'obj');
 		const value = obj.value.get('a')!;
-		const output = replaceNodeAndLineSeparatorsInParentheses(value, script, {
+		const output = replaceNodeAndLineSeparatorsInParentheses(value, script, [obj], {
 			start: 5,
 			end: 9,
 		});

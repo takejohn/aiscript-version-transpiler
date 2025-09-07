@@ -38,4 +38,13 @@ describe('for', () => {
 		const expected = 'for (f(0, 1)) {}';
 		transpileAndValidate(script, expected);
 	});
+
+	test('for: continue', () => {
+		const script = dedent`
+			for 2 {
+				continue
+			}
+		`;
+		transpileAndValidate(script, script);
+	});
 });
