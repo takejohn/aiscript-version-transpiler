@@ -82,6 +82,72 @@ test('line separator between about and body', () => {
 	transpileAndValidate(script, expected);
 });
 
+test('line separator between case left hand and arrow', () => {
+	const script = dedent`
+		match 0 {
+			1
+			=> 2
+		}
+	`;
+	const expected = dedent`
+		match 0 {
+			case 1 => 2
+		}
+	`;
+	transpileAndValidate(script, expected);
+});
+
+test('line separator between case arrow and right hand', () => {
+	const script = dedent`
+		match 0 {
+			1 =>
+			2
+		}
+	`;
+	const expected = dedent`
+		match 0 {
+			case 1 => 2
+		}
+	`;
+	transpileAndValidate(script, expected);
+});
+
+test('line separator between default left hand and arrow', () => {
+	const script = dedent`
+		match 0 {
+			1
+			=> 2
+			*
+			=> 3
+		}
+	`;
+	const expected = dedent`
+		match 0 {
+			case 1 => 2
+			default => 3
+		}
+	`;
+	transpileAndValidate(script, expected);
+});
+
+test('line separator between default arrow and right hand', () => {
+	const script = dedent`
+		match 0 {
+			1 =>
+			2
+			* =>
+			3
+		}
+	`;
+	const expected = dedent`
+		match 0 {
+			case 1 => 2
+			default => 3
+		}
+	`;
+	transpileAndValidate(script, expected);
+});
+
 describe('obj as right hand of arm', () => {
 	describe('without parentheses', () => {
 		test('case', () => {

@@ -3,6 +3,7 @@ import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { includesSeparator, findNonWhitespaceCharacter, replaceLineSeparators, strictLastIndexOf } from '../utils.js';
 
 const MATCH_KEYWORD = 'match';
+const ARROW = '=>';
 const ASTERISK = '*';
 
 export function replaceMatch(node: Ast.Match, script: string): string {
@@ -16,8 +17,17 @@ export function replaceMatch(node: Ast.Match, script: string): string {
 	builder.addReplacement(aboutLoc.end + 1, bodyStart, replaceLineSeparators);
 
 	for (const caseArm of node.qs) {
-		builder.addInsertion(getActualLocation(caseArm.q, script, true).start, 'case ');
+		const armLeftHandLoc = getActualLocation(caseArm.q, script, true);
+		builder.addInsertion(armLeftHandLoc.start, 'case ');
 		builder.addNodeReplacement(caseArm.q);
+
+		const arrowStart = findNonWhitespaceCharacter(script, armLeftHandLoc.end + 1);
+		builder.addReplacement(armLeftHandLoc.end + 1, arrowStart, replaceLineSeparators);
+
+		const arrowEnd = arrowStart + ARROW.length;
+		const armRightHandStart = findNonWhitespaceCharacter(script, arrowEnd);
+		builder.addReplacement(arrowEnd, armRightHandStart, replaceLineSeparators);
+
 		replaceArmRightHand(caseArm.a, builder, script);
 
 		const caseArmEnd = getActualLocation(caseArm.a, script, true).end + 1;
@@ -30,7 +40,16 @@ export function replaceMatch(node: Ast.Match, script: string): string {
 	if (node.default != null) {
 		const defaultLoc = getActualLocation(node.default, script);
 		const asteriskStart = strictLastIndexOf(script, ASTERISK, defaultLoc.start);
-		builder.addReplacement(asteriskStart, asteriskStart + 1, () => 'default');
+		const asteriskEnd = asteriskStart + ASTERISK.length;
+		builder.addReplacement(asteriskStart, asteriskEnd, () => 'default');
+
+		const arrowStart = findNonWhitespaceCharacter(script, asteriskEnd);
+		builder.addReplacement(asteriskEnd, arrowStart, replaceLineSeparators);
+
+		const arrowEnd = arrowStart + ARROW.length;
+		const armRightHandStart = findNonWhitespaceCharacter(script, arrowEnd);
+		builder.addReplacement(arrowEnd, armRightHandStart, replaceLineSeparators);
+
 		replaceArmRightHand(node.default, builder, script);
 	}
 
