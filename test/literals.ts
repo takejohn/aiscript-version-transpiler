@@ -28,6 +28,11 @@ describe('tmpl', () => {
 		const script = '`{ 1 } + { 2 }`';
 		transpileAndValidate(script, script);
 	});
+
+	test('with expression in parentheses', () => {
+		const script = '`{ (1 + 2) }`';
+		transpileAndValidate(script, script);
+	});
 });
 
 describe('str', () => {

@@ -2,8 +2,6 @@ import type { Ast } from 'aiscript@0.19.0';
 import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { replaceLineSeparators, strictIndexOf } from '../utils.js';
 
-const EQUAL_SIGN = '=';
-
 export function replaceAssign(node: Ast.Assign | Ast.AddAssign | Ast.SubAssign, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script);
 	const destLoc = getActualLocation(node.dest, script, true);
@@ -12,13 +10,28 @@ export function replaceAssign(node: Ast.Assign | Ast.AddAssign | Ast.SubAssign, 
 
 	builder.addNodeReplacement(node.dest, ancestors);
 
-	const equalStart = strictIndexOf(script, EQUAL_SIGN, destLoc.end + 1);
+	const operator = toOperatorString(node);
+	const equalStart = strictIndexOf(script, operator, destLoc.end + 1);
 	builder.addReplacement(destLoc.end + 1, equalStart, replaceLineSeparators);
 
-	const equalEnd = equalStart + EQUAL_SIGN.length;
+	const equalEnd = equalStart + operator.length;
 	builder.addReplacement(equalEnd, exprLoc.start, replaceLineSeparators);
 
 	builder.addNodeReplacement(node.expr, ancestors);
 
 	return builder.execute();
+}
+
+function toOperatorString(node: Ast.Assign | Ast.AddAssign | Ast.SubAssign): string {
+	switch (node.type) {
+		case 'assign': {
+			return '=';
+		}
+		case 'addAssign': {
+			return '+=';
+		}
+		case 'subAssign': {
+			return '-=';
+		}
+	}
 }

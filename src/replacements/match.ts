@@ -38,12 +38,12 @@ export function replaceMatch(node: Ast.Match, script: string, ancestors: Ast.Nod
 	}
 
 	if (node.default != null) {
-		const defaultLoc = getActualLocation(node.default, script);
-		const asteriskStart = strictLastIndexOf(script, ASTERISK, defaultLoc.start);
+		const defaultLoc = getActualLocation(node.default, script, true);
+		const arrowStart = strictLastIndexOf(script, ARROW, defaultLoc.start);
+		const asteriskStart = strictLastIndexOf(script, ASTERISK, arrowStart);
 		const asteriskEnd = asteriskStart + ASTERISK.length;
 		builder.addReplacement(asteriskStart, asteriskEnd, () => 'default');
 
-		const arrowStart = findNonWhitespaceCharacter(script, asteriskEnd);
 		builder.addReplacement(asteriskEnd, arrowStart, replaceLineSeparators);
 
 		const arrowEnd = arrowStart + ARROW.length;

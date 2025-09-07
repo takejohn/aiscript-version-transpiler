@@ -315,6 +315,24 @@ describe('line comment between', () => {
 		transpileAndValidate(script, script);
 	});
 
+	test('call, with commas after', () => {
+		const script = dedent`
+			f(
+				0 // zero
+				, 1 // , one
+				, 2 // , two
+			)
+		`;
+		const expected = dedent`
+			f(
+				0 /* zero
+			*/ 	, 1 /* , one
+			*/ 	, 2 // , two
+			)
+		`;
+		transpileAndValidate(script, expected);
+	});
+
 	test('obj', () => {
 		const script = dedent`
 			{

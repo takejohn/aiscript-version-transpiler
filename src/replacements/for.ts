@@ -4,6 +4,7 @@ import { findNonWhitespaceCharacter, replaceLineSeparators, replaceName, strictI
 
 const FOR_KEYWORD = 'for';
 const LET_KEYWORD = 'let';
+const LEFT_PARENTHESIS = '(';
 const EQUAL_SIGN = '=';
 const COMMA = ',';
 
@@ -38,7 +39,10 @@ function replaceForRange(node: Ast.For, script: string, ancestors: Ast.Node[]): 
 	const loc = getActualLocation(node, script);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
-	const letStart = strictIndexOf(script, LET_KEYWORD, loc.start + FOR_KEYWORD.length);
+	const headerStart = findNonWhitespaceCharacter(script, loc.start + FOR_KEYWORD.length);
+	const hasParentheses = script.startsWith(LEFT_PARENTHESIS, headerStart);
+	const leftParenthesesEnd = hasParentheses ? headerStart + LEFT_PARENTHESIS.length : headerStart;
+	const letStart = strictIndexOf(script, LET_KEYWORD, leftParenthesesEnd);
 	builder.addReplacement(loc.start + FOR_KEYWORD.length, letStart, replaceLineSeparators);
 
 	const varStart = strictIndexOf(script, node.var, letStart + LET_KEYWORD.length);

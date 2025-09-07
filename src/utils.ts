@@ -46,13 +46,15 @@ export function replaceSlices(
 export function strictIndexOf(
 	string: string,
 	searchString: string,
-	position?: number,
+	position: number,
 ): number {
-	const result = string.indexOf(searchString, position);
-	if (result < 0) {
-		throw new TypeError(`String '${searchString}' not found`);
+	const result = findNonWhitespaceCharacter(string, position);
+	if (string.startsWith(searchString, result)) {
+		return result;
 	}
-	return result;
+	throw new TypeError(
+		`String '${searchString}' not found (position: ${position})`,
+	);
 }
 
 export function strictLastIndexOf(
@@ -60,15 +62,25 @@ export function strictLastIndexOf(
 	searchString: string,
 	position?: number,
 ): number {
-	const result = string.lastIndexOf(searchString, position);
-	if (result < 0) {
-		throw new TypeError(`String '${searchString}' not found`);
+	const result = findLastNonWhitespaceCharacter(string, position) + 1 - searchString.length;
+	if (string.startsWith(searchString, result)) {
+		return result;
 	}
-	return result;
+	throw new TypeError(
+		`String '${searchString}' not found (position: ${position})`,
+	);
 }
 
 export function findNonWhitespaceCharacter(string: string, position = 0): number {
 	const result = findNonWhitespaceCharacterOptional(string, position);
+	if (result != null) {
+		return result;
+	}
+	throw new TypeError(`Non whitespace character not found`);
+}
+
+export function findLastNonWhitespaceCharacter(string: string, position = 0): number {
+	const result = findLastNonWhitespaceCharacterOptional(string, position);
 	if (result != null) {
 		return result;
 	}

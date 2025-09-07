@@ -51,7 +51,7 @@ function requireElementLoc(element: string | Ast.Expression, script: string): As
 	if (typeof element !== 'object') {
 		throw new TypeError('Expected expression');
 	}
-	return getActualLocation(element, script);
+	return getActualLocation(element, script, true);
 }
 
 export function replaceStr(node: Ast.Str, script: string): string {
@@ -184,7 +184,7 @@ function replaceObjWithReservedWordKey(node: Ast.Obj, script: string, ancestors:
 		builder.addNodeReplacement(value, ancestors);
 
 		if (hasSeparator === 'comma') {
-			const commaStart = strictIndexOf(script, COMMA, valueLoc.end);
+			const commaStart = strictIndexOf(script, COMMA, valueLoc.end + 1);
 			builder.addReplacement(commaStart, commaStart + COMMA.length, () => ';');
 		} else if (hasSeparator === 'new-line') {
 			builder.addReplacement(valueLoc.end + 1, nextEntryStart, (original) => replaceAllIgnoringComments(original, ',', ''));

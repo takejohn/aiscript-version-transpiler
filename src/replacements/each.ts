@@ -17,7 +17,8 @@ export function replaceEach(node: Ast.Each, script: string, ancestors: Ast.Node[
 	const hasParentheses = script[headerStart] === LEFT_PARENTHESIS;
 	builder.addReplacement(loc.start + KEYWORD_EACH.length, headerStart, replaceLineSeparators);
 
-	const letStart = strictIndexOf(script, KEYWORD_LET, headerStart);
+	const leftParenthesesEnd = hasParentheses ? headerStart + LEFT_PARENTHESIS.length : headerStart;
+	const letStart = strictIndexOf(script, KEYWORD_LET, leftParenthesesEnd);
 	const varStart = findNonWhitespaceCharacter(script, letStart + KEYWORD_LET.length);
 	builder.addReplacement(letStart + KEYWORD_LET.length, varStart, replaceLineSeparators);
 
