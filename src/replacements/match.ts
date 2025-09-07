@@ -10,8 +10,10 @@ export function replaceMatch(node: Ast.Match, script: string, ancestors: Ast.Nod
 	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
-	const aboutLoc = getActualLocation(node.about, script, false);
+	const aboutLoc = getActualLocation(node.about, script, true);
 	builder.addReplacement(loc.start + MATCH_KEYWORD.length, aboutLoc.start, replaceLineSeparators);
+
+	builder.addNodeReplacement(node.about, ancestors, true);
 
 	const bodyStart = findNonWhitespaceCharacter(script, aboutLoc.end + 1);
 	builder.addReplacement(aboutLoc.end + 1, bodyStart, replaceLineSeparators);

@@ -48,3 +48,19 @@ describe('for', () => {
 		transpileAndValidate(script, script);
 	});
 });
+
+describe('match', () => {
+	test('about, keyword identifier', () => {
+		const script = dedent`
+			match this {
+				0 => 1
+			}
+		`;
+		const expected = dedent`
+			match this_ {
+				case 0 => 1
+			}
+		`;
+		transpileAndValidate(script, expected);
+	});
+});
