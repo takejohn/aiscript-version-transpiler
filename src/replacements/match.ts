@@ -7,10 +7,10 @@ const ARROW = '=>';
 const ASTERISK = '*';
 
 export function replaceMatch(node: Ast.Match, script: string, ancestors: Ast.Node[]): string {
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
-	const aboutLoc = getActualLocation(node.about, script);
+	const aboutLoc = getActualLocation(node.about, script, false);
 	builder.addReplacement(loc.start + MATCH_KEYWORD.length, aboutLoc.start, replaceLineSeparators);
 
 	const bodyStart = findNonWhitespaceCharacter(script, aboutLoc.end + 1);

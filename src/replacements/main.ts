@@ -239,7 +239,7 @@ function replaceNode(
 	}
 }
 
-export function getActualLocation(node: Ast.Node, script: string, includeEnclosingParentheses = false): Ast.Loc {
+export function getActualLocation(node: Ast.Node, script: string, includeEnclosingParentheses: boolean): Ast.Loc {
 	if (includeEnclosingParentheses) {
 		const innerLoc = getActualLocation(node, script, false);
 		const enclosingParentheses = getEnclosingParenthesesRecursive(innerLoc, script);

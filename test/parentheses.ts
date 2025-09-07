@@ -269,6 +269,18 @@ describe('each', () => {
 		`;
 		transpileAndValidate(script, expected);
 	});
+
+	test('for (without braces)', () => {
+		const script = dedent`
+			each let e, [] (
+				0
+			)
+		`;
+		const expected = dedent`
+			each let e, [] ( 0 )
+		`;
+		transpileAndValidate(script, expected);
+	});
 });
 
 test('fn', () => {
@@ -316,6 +328,18 @@ describe('for', () => {
 			`;
 			transpileAndValidate(script, expected);
 		});
+
+		test('for (without parentheses)', () => {
+			const script = dedent`
+				for 0 (
+					0
+				)
+			`;
+			const expected = dedent`
+				for 0 ( 0 )
+			`;
+			transpileAndValidate(script, expected);
+		});
 	});
 
 	describe('range', () => {
@@ -358,6 +382,18 @@ describe('for', () => {
 			`;
 			transpileAndValidate(script, expected);
 		});
+
+		test('for (without braces)', () => {
+			const script = dedent`
+				for let i = 0, 1 (
+					0
+				)
+			`;
+			const expected = dedent`
+				for let i = 0, 1 ( 0 )
+			`;
+			transpileAndValidate(script, expected);
+		});
 	});
 });
 
@@ -386,6 +422,18 @@ describe('if', () => {
 			if true {
 				( 0 )
 			}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('then (without braces)', () => {
+		const script = dedent`
+			if true (
+				0
+			)
+		`;
+		const expected = dedent`
+			if true ( 0 )
 		`;
 		transpileAndValidate(script, expected);
 	});
@@ -422,6 +470,20 @@ describe('if', () => {
 		transpileAndValidate(script, expected);
 	});
 
+	test('elseif then (without braces)', () => {
+		const script = dedent`
+			if true {
+			} elif false (
+				0
+			)
+		`;
+		const expected = dedent`
+			if true {
+			} elif false ( 0 )
+		`;
+		transpileAndValidate(script, expected);
+	});
+
 	test('else', () => {
 		const script = dedent`
 			if true {
@@ -436,6 +498,20 @@ describe('if', () => {
 			} else {
 				( 0 )
 			}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('else (without braces)', () => {
+		const script = dedent`
+			if true {
+			} else (
+				0
+			)
+		`;
+		const expected = dedent`
+			if true {
+			} else ( 0 )
 		`;
 		transpileAndValidate(script, expected);
 	});

@@ -20,9 +20,9 @@ function replaceForTimes(node: Ast.For, script: string, ancestors: Ast.Node[]): 
 	if (node.times == null) {
 		throw new TypeError('times should exist');
 	}
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const timesLoc = getActualLocation(node.times, script, true);
-	const forLoc = getActualLocation(node.for, script);
+	const forLoc = getActualLocation(node.for, script, true);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	builder.addReplacement(loc.start + FOR_KEYWORD.length, timesLoc.start, replaceLineSeparators);
 	builder.addNodeReplacement(node.times, ancestors);
@@ -36,7 +36,7 @@ function replaceForRange(node: Ast.For, script: string, ancestors: Ast.Node[]): 
 		throw new TypeError('var, from and to should exist');
 	}
 
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	const headerStart = findNonWhitespaceCharacter(script, loc.start + FOR_KEYWORD.length);
@@ -84,7 +84,7 @@ function replaceForRange(node: Ast.For, script: string, ancestors: Ast.Node[]): 
 
 	builder.addNodeReplacement(node.to, ancestors);
 
-	const forLoc = getActualLocation(node.for, script);
+	const forLoc = getActualLocation(node.for, script, true);
 	builder.addReplacement(toLoc.end + 1, forLoc.start, replaceLineSeparators);
 	builder.addNodeReplacement(node.for, ancestors);
 	return builder.execute();

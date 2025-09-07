@@ -8,7 +8,7 @@ export function replaceCall(node: Ast.Call, script: string, ancestors: Ast.Node[
 		throw new TypeError('node does not have loc');
 	}
 
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	if (isCallNotation(node, script)) {

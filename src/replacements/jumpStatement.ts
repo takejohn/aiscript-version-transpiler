@@ -31,7 +31,7 @@ function hasBreakableAncestor(ancestors: Ast.Node[]): boolean {
 }
 
 export function replaceReturn(node: Ast.Return, script: string, ancestors: Ast.Node[]): string {
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	const exprLoc = getActualLocation(node.expr, script, true);
 

@@ -11,7 +11,7 @@ const COLON = ':';
 const EQUAL_SIGN = '=';
 
 export function replaceDefinition(node: Ast.Definition, script: string, ancestors: Ast.Node[]): string {
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	if (script.at(loc.start) === AT_SIGN) {
 		if (node.expr.type !== 'fn') {
 			throw new TypeError('Expected function');
@@ -23,7 +23,7 @@ export function replaceDefinition(node: Ast.Definition, script: string, ancestor
 }
 
 function replaceVarDef(node: Ast.Definition, script: string, ancestors: Ast.Node[]): string {
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	const keyword = node.mut ? VAR_KEYWORD : LET_KEYWORD;

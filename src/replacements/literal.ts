@@ -20,7 +20,7 @@ const COLON = ':';
 const COMMA = ',';
 
 export function replaceTmpl(node: Ast.Tmpl, script: string, ancestors: Ast.Node[]): string {
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 	for (let i = 0; i < node.tmpl.length; i++) {
 		const element = node.tmpl[i]!;
@@ -55,7 +55,7 @@ function requireElementLoc(element: string | Ast.Expression, script: string): As
 }
 
 export function replaceStr(node: Ast.Str, script: string): string {
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const quote = script.at(loc.start);
 	if (quote !== '\'' && quote !== '"') {
 		throw new TypeError(`Unknown quote character: ${quote}`);
@@ -105,7 +105,7 @@ export function replaceObj(node: Ast.Obj, script: string, ancestors: Ast.Node[])
 		return replaceObjWithReservedWordKey(node, script, ancestors);
 	}
 
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	const leftBraceEnd = loc.start + 1;
@@ -150,7 +150,7 @@ function includesReservedWord(keys: Iterable<string>): boolean {
 }
 
 function replaceObjWithReservedWordKey(node: Ast.Obj, script: string, ancestors: Ast.Node[]): string {
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	const leftBraceEnd = loc.start + LEFT_BRACE.length;
@@ -218,7 +218,7 @@ function getSemicolonSeparator(script: string, start: number, end: number): numb
 }
 
 export function replaceArr(node: Ast.Arr, script: string, ancestors: Ast.Node[]): string {
-	const loc = getActualLocation(node, script);
+	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
 
 	for (const item of node.value) {
