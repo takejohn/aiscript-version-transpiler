@@ -1,4 +1,4 @@
-import { Ast } from 'aiscript@0.19.0';
+import { Ast } from 'aiscript.0.19.0';
 import { getActualLocation } from './main.js';
 import { replaceLineSeparators, strictIndexOf } from '../utils.js';
 import { ReplacementsBuilder } from './main.js';

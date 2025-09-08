@@ -8,10 +8,10 @@ importers:
 
   .:
     dependencies:
-      aiscript@0.19.0:
+      aiscript.0.19.0:
         specifier: npm:@syuilo/aiscript@0.19.0
         version: '@syuilo/aiscript@0.19.0'
-      aiscript@1.1.0:
+      aiscript.1.1.0:
         specifier: npm:@syuilo/aiscript@1.1.0
         version: '@syuilo/aiscript@1.1.0'
     devDependencies:
@@ -2233,8 +2233,8 @@ snapshots:
 
   'aiscript-version-transpiler@file:':
     dependencies:
-      aiscript@0.19.0: '@syuilo/aiscript@0.19.0'
-      aiscript@1.1.0: '@syuilo/aiscript@1.1.0'
+      aiscript.0.19.0: '@syuilo/aiscript@0.19.0'
+      aiscript.1.1.0: '@syuilo/aiscript@1.1.0'
 
   ajv@6.12.6:
     dependencies:

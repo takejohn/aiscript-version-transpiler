@@ -1,4 +1,4 @@
-import { Ast } from 'aiscript@0.19.0';
+import { Ast } from 'aiscript.0.19.0';
 import {
 	findLastNonWhitespaceCharacterOptional,
 	findNonWhitespaceCharacterOptional,

@@ -1,4 +1,4 @@
-import { Parser } from 'aiscript@0.19.0';
+import { Parser } from 'aiscript.0.19.0';
 
 import { replaceAst } from './replacements/main.js';
 

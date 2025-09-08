@@ -1,4 +1,4 @@
-import type { Ast } from 'aiscript@0.19.0';
+import type { Ast } from 'aiscript.0.19.0';
 import { ReplacementsBuilder, getActualLocation } from './main.js';
 import { replaceFn } from './fn.js';
 import { findNonWhitespaceCharacter, replaceLineSeparators, replaceName, strictIndexOf } from '../utils.js';

@@ -1,4 +1,4 @@
-import type { Ast } from 'aiscript@0.19.0';
+import type { Ast } from 'aiscript.0.19.0';
 import { ReplacementsBuilder, getActualLocation, replaceNodeAndLineSeparatorsInParentheses } from './main.js';
 import {
 	findLastNonWhitespaceCharacter,

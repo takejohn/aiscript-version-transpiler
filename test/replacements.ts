@@ -1,7 +1,7 @@
 import dedent from 'ts-dedent';
 import { describe, expect, test } from 'vitest';
 import { getActualLocation, replaceNodeAndLineSeparatorsInParentheses } from '../src/replacements/main';
-import { Parser } from 'aiscript@0.19.0';
+import { Parser } from 'aiscript.0.19.0';
 import { requireType } from './test_utils';
 
 describe('replaceNodeAndLineSeparatorsInParentheses', () => {
