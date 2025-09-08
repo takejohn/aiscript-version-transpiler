@@ -139,6 +139,50 @@ describe('obj', () => {
 		const script = '{ a: ((0)) }';
 		transpileAndValidate(script, script);
 	});
+
+	test('duplicated keys', () => {
+		const script = dedent`
+			{
+				a: 0
+				b: 1
+				c: 2
+				b: 3
+				d: 4
+			}
+		`;
+		const expected = dedent`
+			{
+				a: 0
+				b: 3
+				c: 2
+				
+				d: 4
+			}
+		`;
+		transpileAndValidate(script, expected);
+	});
+
+	test('duplicated reserved word keys', () => {
+		const script = dedent`
+			{
+				a: 0
+				class: 1
+				b: 2
+				class: 3
+				c: 4
+			}
+		`;
+		const expected = dedent`
+			eval{let __AVT={};
+				__AVT.a= 0
+				__AVT["class"]= 3
+				__AVT.b= 2
+				
+				__AVT.c= 4
+			__AVT}
+		`;
+		transpileAndValidate(script, expected);
+	});
 });
 
 describe('arr', () => {

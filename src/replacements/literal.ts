@@ -1,8 +1,11 @@
 import type { Ast } from 'aiscript@0.19.0';
-import { ReplacementsBuilder, getActualLocation } from './main.js';
+import { ReplacementsBuilder, getActualLocation, replaceNodeAndLineSeparatorsInParentheses } from './main.js';
 import {
+	findLastNonWhitespaceCharacter,
 	findNextItem,
 	findNonWhitespaceCharacter,
+	getNameEnd,
+	getNameStart,
 	isKeyword,
 	isUnusedKeyword,
 	replaceAllIgnoringComments,
@@ -11,6 +14,7 @@ import {
 	strictIndexOf,
 	strictLastIndexOf,
 	trySkipComment,
+	trySkipStrOrTmpl,
 } from '../utils.js';
 
 const tmplEscapableChars = ['{', '}', '`'];
@@ -18,6 +22,7 @@ const LEFT_BRACE = '{';
 const RIGHT_BRACE = '}';
 const COLON = ':';
 const COMMA = ',';
+const SEMICOLON = ';';
 
 export function replaceTmpl(node: Ast.Tmpl, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script, false);
@@ -102,42 +107,10 @@ function replaceStringContent(original: string, escapableChars: readonly string[
 
 export function replaceObj(node: Ast.Obj, script: string, ancestors: Ast.Node[]): string {
 	if (includesReservedWord(node.value.keys())) {
-		return replaceObjWithReservedWordKey(node, script, ancestors);
+		return replaceObjWithReservedWordKeys(node, script, ancestors);
+	} else {
+		return replaceObjWithoutReservedWordKeys(node, script, ancestors);
 	}
-
-	const loc = getActualLocation(node, script, false);
-	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
-
-	const leftBraceEnd = loc.start + 1;
-	let entryStart = findNonWhitespaceCharacter(script, leftBraceEnd);
-	for (const [key, value] of node.value) {
-		const valueLoc = getActualLocation(value, script, true);
-
-		const [nextEntryStart, separator] = findNextItem(script, valueLoc.end + 1);
-		if (separator === 'comma') {
-			const commaStart = strictIndexOf(script, ',', valueLoc.end + 1);
-			builder.addReplacement(valueLoc.end + 1, commaStart, replaceLineSeparators);
-		} else if (separator == null && !script.startsWith(RIGHT_BRACE, nextEntryStart)) {
-			builder.addInsertion(valueLoc.end + 1, ',');
-		}
-		const semicolonStart = getSemicolonSeparator(script, valueLoc.end + 1, nextEntryStart);
-		if (semicolonStart != null) {
-			builder.addReplacement(semicolonStart, semicolonStart + 1, () => ',');
-		}
-
-		const keyEnd = entryStart + key.length;
-		const colonStart = strictIndexOf(script, COLON, keyEnd);
-		builder.addReplacement(keyEnd, colonStart, replaceLineSeparators);
-
-		const colonEnd = colonStart + COLON.length;
-		builder.addReplacement(colonEnd, valueLoc.start, replaceLineSeparators);
-
-		builder.addNodeReplacement(value, ancestors, true);
-
-		entryStart = nextEntryStart;
-	}
-
-	return builder.execute();
 }
 
 function includesReservedWord(keys: Iterable<string>): boolean {
@@ -149,71 +122,177 @@ function includesReservedWord(keys: Iterable<string>): boolean {
 	return false;
 }
 
-function replaceObjWithReservedWordKey(node: Ast.Obj, script: string, ancestors: Ast.Node[]): string {
+function replaceObjWithoutReservedWordKeys(node: Ast.Obj, script: string, ancestors: Ast.Node[]): string {
 	const loc = getActualLocation(node, script, false);
 	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
+	const foundKeys = new Set<string>();
 
 	const leftBraceEnd = loc.start + LEFT_BRACE.length;
-	builder.addReplacement(loc.start, leftBraceEnd, () => `eval{let ${RESERVED_WORD_FOR_OBJ}={};`);
-
-	let entryStart = findNonWhitespaceCharacter(script, leftBraceEnd);
-	for (const [key, value] of node.value.entries()) {
-		if (!script.startsWith(key, entryStart)) {
-			throw new TypeError(`Expected key: ${key}`);
-		}
-
-		const valueLoc = getActualLocation(value, script, true);
-
-		const [nextEntryStart, hasSeparator] = findNextItem(script, valueLoc.end + 1);
-
-		const keyEnd = entryStart + key.length;
-		if (isKeyword(key)) {
-			builder.addReplacement(entryStart, keyEnd, () => `${RESERVED_WORD_FOR_OBJ}["${key}"]`);
-		} else {
-			builder.addReplacement(entryStart, keyEnd, () => `${RESERVED_WORD_FOR_OBJ}.${key}`);
-		}
-
+	let keyStart = findNonWhitespaceCharacter(script, leftBraceEnd);
+	while (!script.startsWith(RIGHT_BRACE, keyStart)) {
+		const keyEnd = getNameEnd(script, keyStart);
 		const colonStart = strictIndexOf(script, COLON, keyEnd);
-		builder.addReplacement(keyEnd, colonStart, replaceLineSeparators);
-
 		const colonEnd = colonStart + COLON.length;
-		builder.addReplacement(colonStart, colonEnd, () => '=');
-
-		builder.addReplacement(colonEnd, valueLoc.start, replaceLineSeparators);
-
-		builder.addNodeReplacement(value, ancestors);
-
-		if (hasSeparator === 'comma') {
-			const commaStart = strictIndexOf(script, COMMA, valueLoc.end + 1);
-			builder.addReplacement(commaStart, commaStart + COMMA.length, () => ';');
-		} else if (hasSeparator === 'new-line') {
-			builder.addReplacement(valueLoc.end + 1, nextEntryStart, (original) => replaceAllIgnoringComments(original, ',', ''));
-		} else {
-			if (getSemicolonSeparator(script, valueLoc.end + 1, nextEntryStart) == null) {
-				builder.addInsertion(valueLoc.end + 1, ';');
-			}
+		const valueStart = findNonWhitespaceCharacter(script, colonEnd);
+		const key = script.slice(keyStart, keyEnd);
+		const valueEnd = getObjValueEnd(script, valueStart);
+		const [nextEntryStart, separator] = findNextItem(script, valueEnd);
+		const value = node.value.get(key);
+		if (value == null) {
+			throw new TypeError(`Unknown key '${key}'`);
 		}
 
-		entryStart = nextEntryStart;
-	}
+		if (foundKeys.has(key)) {
+			let separatorEnd: number;
+			if (separator === 'comma') {
+				separatorEnd = strictIndexOf(script, COMMA, valueEnd) + COMMA.length;
+			} else if (separator === 'semicolon') {
+				separatorEnd = strictIndexOf(script, SEMICOLON, valueEnd) + SEMICOLON.length;
+			} else {
+				separatorEnd = valueEnd;
+			}
+			builder.addReplacement(keyStart, separatorEnd, () => '');
+			keyStart = nextEntryStart;
+			continue;
+		}
 
-	const rightBraceEnd = entryStart + RIGHT_BRACE.length;
-	builder.addReplacement(entryStart, rightBraceEnd, () => `${RESERVED_WORD_FOR_OBJ}}`);
+		foundKeys.add(key);
+
+		builder.addReplacement(keyEnd, colonStart, replaceLineSeparators);
+		builder.addReplacement(colonEnd, valueStart, replaceLineSeparators);
+		builder.addReplacement(
+			valueStart,
+			valueEnd,
+			() => replaceNodeAndLineSeparatorsInParentheses(value, script, ancestors),
+		);
+
+		if (separator === 'comma') {
+			const commaStart = strictIndexOf(script, COMMA, valueEnd);
+			builder.addReplacement(valueEnd, commaStart, replaceLineSeparators);
+		} else if (separator === 'semicolon') {
+			const semicolonStart = strictIndexOf(script, SEMICOLON, valueEnd);
+			builder.addReplacement(valueEnd, semicolonStart, replaceLineSeparators);
+			builder.addReplacement(semicolonStart, semicolonStart + 1, () => ',');
+		}
+
+		if (script.startsWith(RIGHT_BRACE, nextEntryStart)) {
+			break;
+		} else if (separator == null) {
+			builder.addInsertion(valueEnd, ',');
+		}
+
+		keyStart = nextEntryStart;
+	}
 
 	return builder.execute();
 }
 
-function getSemicolonSeparator(script: string, start: number, end: number): number | undefined {
-	for (let i = start; i < end;) {
-		if (script[i] === ';') {
-			return i;
+function replaceObjWithReservedWordKeys(node: Ast.Obj, script: string, ancestors: Ast.Node[]): string {
+	const loc = getActualLocation(node, script, false);
+	const builder = new ReplacementsBuilder(script, loc.start, loc.end);
+	const foundKeys = new Set<string>();
+
+	const leftBraceEnd = loc.start + LEFT_BRACE.length;
+	builder.addReplacement(loc.start, leftBraceEnd, () => `eval{let ${RESERVED_WORD_FOR_OBJ}={};`);
+
+	let keyStart = findNonWhitespaceCharacter(script, leftBraceEnd);
+	while (!script.startsWith(RIGHT_BRACE, keyStart)) {
+		const keyEnd = getNameEnd(script, keyStart);
+		const colonStart = strictIndexOf(script, COLON, keyEnd);
+		const colonEnd = colonStart + COLON.length;
+		const valueStart = findNonWhitespaceCharacter(script, colonEnd);
+		const key = script.slice(keyStart, keyEnd);
+		const valueEnd = getObjValueEnd(script, valueStart);
+		const [nextEntryStart, separator] = findNextItem(script, valueEnd);
+		const value = node.value.get(key);
+		if (value == null) {
+			throw new TypeError(`Unknown key '${key}'`);
 		}
-		const afterComment = trySkipComment(script, i);
-		if (afterComment != null) {
-			i = afterComment;
+
+		if (foundKeys.has(key)) {
+			let separatorEnd: number;
+			if (separator === 'comma') {
+				separatorEnd = strictIndexOf(script, COMMA, valueEnd) + COMMA.length;
+			} else if (separator === 'semicolon') {
+				separatorEnd = strictIndexOf(script, SEMICOLON, valueEnd) + SEMICOLON.length;
+			} else {
+				separatorEnd = valueEnd;
+			}
+			builder.addReplacement(keyStart, separatorEnd, () => '');
+			keyStart = nextEntryStart;
+			continue;
+		}
+
+		foundKeys.add(key);
+
+		if (isKeyword(key)) {
+			builder.addReplacement(keyStart, keyEnd, () => `${RESERVED_WORD_FOR_OBJ}["${key}"]`);
 		} else {
-			i++;
+			builder.addReplacement(keyStart, keyEnd, () => `${RESERVED_WORD_FOR_OBJ}.${key}`);
 		}
+
+		builder.addReplacement(keyEnd, colonStart, replaceLineSeparators);
+		builder.addReplacement(colonStart, colonEnd, () => '=');
+		builder.addReplacement(colonEnd, valueStart, replaceLineSeparators);
+		builder.addReplacement(
+			valueStart,
+			valueEnd,
+			() => replaceNodeAndLineSeparatorsInParentheses(value, script, ancestors),
+		);
+
+		if (separator === 'comma') {
+			const commaStart = strictIndexOf(script, COMMA, valueEnd);
+			builder.addReplacement(commaStart, commaStart + COMMA.length, () => ';');
+		} else if (separator === 'new-line') {
+			builder.addReplacement(valueEnd, nextEntryStart, (original) => replaceAllIgnoringComments(original, COMMA, ''));
+		} else if (separator == null) {
+			builder.addInsertion(valueEnd, ';');
+		}
+
+		keyStart = nextEntryStart;
+	}
+
+	const rightBraceEnd = keyStart + RIGHT_BRACE.length;
+	builder.addReplacement(keyStart, rightBraceEnd, () => `${RESERVED_WORD_FOR_OBJ}}`);
+
+	return builder.execute();
+}
+
+function getObjValueEnd(script: string, valueStart: number): number {
+	let position = findNonWhitespaceCharacter(script, valueStart);
+	let depth = 0;
+	while (depth !== 0 || !script.startsWith(COLON, position)) {
+		if (script.startsWith(LEFT_BRACE, position)) {
+			depth++;
+		} else if (script.startsWith(RIGHT_BRACE, position)) {
+			depth--;
+		}
+		if (depth < 0) {
+			return getLastObjValueEnd(script, position);
+		}
+		const afterComment = trySkipComment(script, position);
+		if (afterComment != null) {
+			position = afterComment;
+			continue;
+		}
+		const afterStrOrTmpl = trySkipStrOrTmpl(script, position);
+		if (afterStrOrTmpl != null) {
+			position = afterStrOrTmpl;
+			continue;
+		}
+		position = findNonWhitespaceCharacter(script, position + 1);
+	}
+	const nextKeyEnd = findLastNonWhitespaceCharacter(script, position);
+	const nextKeyStart = getNameStart(script, nextKeyEnd + 1);
+	return getLastObjValueEnd(script, nextKeyStart);
+}
+
+function getLastObjValueEnd(script: string, position: number): number {
+	const valueEnd = findLastNonWhitespaceCharacter(script, position);
+	if (script[valueEnd]! === COMMA || script[valueEnd]! === SEMICOLON) {
+		return findLastNonWhitespaceCharacter(script, valueEnd) + 1;
+	} else {
+		return valueEnd + 1;
 	}
 }
 

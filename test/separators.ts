@@ -198,9 +198,9 @@ describe('object with reserved word key', () => {
 		`;
 		const expected = dedent`
 			eval{let __AVT={};
-				__AVT.a= 0
-				__AVT["public"]= 1
-				__AVT.b= 2
+				__AVT.a= 0;
+				__AVT["public"]= 1;
+				__AVT.b= 2;
 			__AVT}
 		`;
 		transpileAndValidate(script, expected);

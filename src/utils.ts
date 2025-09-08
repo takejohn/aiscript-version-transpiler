@@ -106,20 +106,20 @@ export function findLastNonWhitespaceCharacterOptional(string: string, position 
 	const comments = [...getComments(string, start, position)];
 	for (let i = position - 1; i >= start;) {
 		const char = string[i]!;
-		if (!SPACE_CHARS.test(char) && !LINE_SEPARATORS.test(char)) {
-			const comment = comments.find(([_start, end]) => end === i);
-			if (comment == null) {
-				return i;
-			}
-			i = comment[0];
+		const comment = comments.find(([_start, end]) => end === i);
+		if (comment != null) {
+			i = comment[0] - 1;
 			continue;
+		}
+		if (!SPACE_CHARS.test(char) && !LINE_SEPARATORS.test(char)) {
+			return i;
 		}
 		i--;
 	}
 }
 
 function* getComments(script: string, start = 0, end = script.length): Iterable<[number, number]> {
-	const state: ('plain' | 'tmpl-string' | 'tmpl-escape')[] = [];
+	const state: ('plain' | 'tmpl-string' | 'tmpl-escape')[] = ['plain'];
 
 	for (let i = start; i < end;) {
 		if (state.length === 0) {
@@ -130,7 +130,7 @@ function* getComments(script: string, start = 0, end = script.length): Iterable<
 		switch (state.at(-1)!) {
 			case 'plain': {
 				if (char === '\'' || char === '"') {
-					i = skipString(script, i);
+					i = skipStr(script, i);
 				} else if (char === '`') {
 					state.push('tmpl-string');
 					i++;
@@ -175,7 +175,16 @@ function* getComments(script: string, start = 0, end = script.length): Iterable<
 	}
 }
 
-function skipString(script: string, start = 0): number {
+export function trySkipStrOrTmpl(script: string, start: number): number | undefined {
+	if (script.startsWith('`', start)) {
+		return skipTmpl(script, start);
+	}
+	if (script.startsWith('"', start) || script.startsWith('\'', start)) {
+		return skipStr(script, start);
+	}
+}
+
+function skipStr(script: string, start: number): number {
 	const quote = script[start]!;
 	let state: 'string' | 'escape' = 'string';
 
@@ -192,6 +201,58 @@ function skipString(script: string, start = 0): number {
 				state = 'string';
 			}
 		}
+	}
+
+	throw new TypeError('Unexpected end of file');
+}
+
+function skipTmpl(script: string, start: number): number {
+	let state: 'string' | 'escape' | 'expr' = 'string';
+	let depth = 0;
+
+	for (let i = start + 1; i < script.length;) {
+		const char = script[i]!;
+
+		switch (state) {
+			case 'string': {
+				if (char === '\\') {
+					state = 'escape';
+				} else if (char === '{') {
+					depth++;
+					state = 'expr';
+				} else if (char === '`') {
+					return i + 1;
+				}
+				break;
+			}
+
+			case 'escape': {
+				if (char !== '\\') {
+					state = 'string';
+				}
+				break;
+			}
+
+			case 'expr': {
+				const afterComment = trySkipComment(script, i);
+				if (afterComment != null) {
+					i = afterComment;
+					continue;
+				}
+
+				if (char === '{') {
+					depth++;
+				} else if (char === '}') {
+					depth--;
+				}
+				if (depth == 0) {
+					state = 'string';
+				}
+				break;
+			}
+		}
+
+		i++;
 	}
 
 	throw new TypeError('Unexpected end of file');
@@ -284,10 +345,12 @@ export function findNextItem(string: string, start: number): [number, 'comma' | 
 		const char = string[i]!;
 		if (char === ',') {
 			separator = 'comma';
-		} else if (LINE_SEPARATORS.test(char)) {
-			separator = 'new-line';
 		} else if (char === ';') {
 			separator = 'semicolon';
+		} else if (LINE_SEPARATORS.test(char)) {
+			if (separator == null) {
+				separator = 'new-line';
+			}
 		} else if (!SPACE_CHARS.test(char)) {
 			const afterComment = trySkipComment(string, i);
 			if (afterComment == null) {
@@ -451,13 +514,23 @@ export function getNameEnd(script: string, start: number): number {
 
 	const startChar = script[start]!;
 	if (!/[A-Z_]/i.test(startChar)) {
-		throw new TypeError('Invalid argument name');
+		throw new TypeError('Invalid name');
 	}
 
 	for (let position = start + 1; position < script.length; position++) {
 		const char = script[position]!;
 		if (!/[A-Z0-9_]/i.test(char)) {
 			return position;
+		}
+	}
+	return script.length;
+}
+
+export function getNameStart(script: string, end: number): number {
+	for (let position = end - 1; position >= 0; position--) {
+		const char = script[position]!;
+		if (!/[A-Z0-9_]/i.test(char)) {
+			return position + 1;
 		}
 	}
 	return script.length;
