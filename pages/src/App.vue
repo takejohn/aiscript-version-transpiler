@@ -47,6 +47,21 @@
 				{{ toastMessage }}
 			</div>
 		</transition>
+
+		<!-- フッター -->
+    <footer class="mt-8 pt-4 border-t text-sm text-gray-600 text-center">
+      <FooterLink href="https://github.com/takejohn/aiscript-version-transpiler">
+        Source
+			</FooterLink>
+      •
+      <FooterLink href="https://github.com/takejohn/aiscript-version-transpiler/issues">
+        Bugs
+			</FooterLink>
+      •
+      <FooterLink href="https://mk.takejohn.jp/@takejohn">
+        Misskey
+			</FooterLink>
+    </footer>
 	</div>
 </template>
 
@@ -54,6 +69,8 @@
 import { onMounted, ref, watch } from 'vue';
 import { transpile } from 'aiscript-version-transpiler';
 import { Copy as CopyIcon } from 'lucide-vue-next';
+
+import FooterLink from '../components/FooterLink.vue';
 
 const STORAGE_KEY = 'aiscript-version-transpiler:input-script';
 const defaultInput = `/* Write your AiScript code here... */`;
