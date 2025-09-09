@@ -16,6 +16,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint .",
+    "prebuild": "peggy --format es --cache -o src/aiscript/parser.js --dts --allowed-start-rules Preprocess,PartialExpr src/aiscript/parser.peggy && copyfiles -u 1 src/**/*.{d.ts,js} dist",
     "test": "vitest run"
   },
   "author": "Take-John <takejohn@takejohn.jp> (https://takejohn.jp/)",
@@ -29,7 +30,9 @@
     "@eslint/js": "^9.34.0",
     "@stylistic/eslint-plugin": "^5.3.1",
     "@vitest/coverage-v8": "3.2.4",
+    "copyfiles": "^2.4.1",
     "eslint": "^9.34.0",
+    "peggy": "^5.0.6",
     "ts-dedent": "^2.2.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.42.0",

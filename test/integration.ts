@@ -64,3 +64,34 @@ describe('match', () => {
 		transpileAndValidate(script, expected);
 	});
 });
+
+describe('obj', () => {
+	test('value: namespace reference', () => {
+		const script = '{ a: Ns:a }';
+		transpileAndValidate(script, script);
+	});
+
+	test('with reserved word key, value: namespace reference', () => {
+		const script = '{ class: Ns:a }';
+		const expected = 'eval{let __AVT={}; __AVT["class"]= Ns:a; __AVT}';
+		transpileAndValidate(script, expected);
+	});
+
+	test('value: with comments', () => {
+		const script = dedent`
+			{
+				f: @() {
+					// comment
+				}
+			}
+		`;
+		const expected = dedent`
+			{
+				f: @() {
+					// comment
+				}
+			}
+		`;
+		transpileAndValidate(script, expected);
+	});
+});

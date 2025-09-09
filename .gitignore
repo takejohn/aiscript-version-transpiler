@@ -1,3 +1,5 @@
 /node_modules
 /dist
 /coverage
+/src/aiscript/parser.js
+/src/aiscript/parser.d.ts

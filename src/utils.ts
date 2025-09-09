@@ -175,15 +175,6 @@ function* getComments(script: string, start = 0, end = script.length): Iterable<
 	}
 }
 
-export function trySkipStrOrTmpl(script: string, start: number): number | undefined {
-	if (script.startsWith('`', start)) {
-		return skipTmpl(script, start);
-	}
-	if (script.startsWith('"', start) || script.startsWith('\'', start)) {
-		return skipStr(script, start);
-	}
-}
-
 function skipStr(script: string, start: number): number {
 	const quote = script[start]!;
 	let state: 'string' | 'escape' = 'string';
@@ -201,58 +192,6 @@ function skipStr(script: string, start: number): number {
 				state = 'string';
 			}
 		}
-	}
-
-	throw new TypeError('Unexpected end of file');
-}
-
-function skipTmpl(script: string, start: number): number {
-	let state: 'string' | 'escape' | 'expr' = 'string';
-	let depth = 0;
-
-	for (let i = start + 1; i < script.length;) {
-		const char = script[i]!;
-
-		switch (state) {
-			case 'string': {
-				if (char === '\\') {
-					state = 'escape';
-				} else if (char === '{') {
-					depth++;
-					state = 'expr';
-				} else if (char === '`') {
-					return i + 1;
-				}
-				break;
-			}
-
-			case 'escape': {
-				if (char !== '\\') {
-					state = 'string';
-				}
-				break;
-			}
-
-			case 'expr': {
-				const afterComment = trySkipComment(script, i);
-				if (afterComment != null) {
-					i = afterComment;
-					continue;
-				}
-
-				if (char === '{') {
-					depth++;
-				} else if (char === '}') {
-					depth--;
-				}
-				if (depth == 0) {
-					state = 'string';
-				}
-				break;
-			}
-		}
-
-		i++;
 	}
 
 	throw new TypeError('Unexpected end of file');
@@ -521,16 +460,6 @@ export function getNameEnd(script: string, start: number): number {
 		const char = script[position]!;
 		if (!/[A-Z0-9_]/i.test(char)) {
 			return position;
-		}
-	}
-	return script.length;
-}
-
-export function getNameStart(script: string, end: number): number {
-	for (let position = end - 1; position >= 0; position--) {
-		const char = script[position]!;
-		if (!/[A-Z0-9_]/i.test(char)) {
-			return position + 1;
 		}
 	}
 	return script.length;

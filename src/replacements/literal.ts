@@ -1,11 +1,9 @@
 import type { Ast } from 'aiscript.0.19.0';
 import { ReplacementsBuilder, getActualLocation, replaceNodeAndLineSeparatorsInParentheses } from './main.js';
 import {
-	findLastNonWhitespaceCharacter,
 	findNextItem,
 	findNonWhitespaceCharacter,
 	getNameEnd,
-	getNameStart,
 	isKeyword,
 	isUnusedKeyword,
 	replaceAllIgnoringComments,
@@ -13,9 +11,8 @@ import {
 	RESERVED_WORD_FOR_OBJ,
 	strictIndexOf,
 	strictLastIndexOf,
-	trySkipComment,
-	trySkipStrOrTmpl,
 } from '../utils.js';
+import { parse } from '../aiscript/parser.js';
 
 const tmplEscapableChars = ['{', '}', '`'];
 const LEFT_BRACE = '{';
@@ -258,42 +255,15 @@ function replaceObjWithReservedWordKeys(node: Ast.Obj, script: string, ancestors
 	return builder.execute();
 }
 
-function getObjValueEnd(script: string, valueStart: number): number {
-	let position = findNonWhitespaceCharacter(script, valueStart);
-	let depth = 0;
-	while (depth !== 0 || !script.startsWith(COLON, position)) {
-		if (script.startsWith(LEFT_BRACE, position)) {
-			depth++;
-		} else if (script.startsWith(RIGHT_BRACE, position)) {
-			depth--;
-		}
-		if (depth < 0) {
-			return getLastObjValueEnd(script, position);
-		}
-		const afterComment = trySkipComment(script, position);
-		if (afterComment != null) {
-			position = afterComment;
-			continue;
-		}
-		const afterStrOrTmpl = trySkipStrOrTmpl(script, position);
-		if (afterStrOrTmpl != null) {
-			position = afterStrOrTmpl;
-			continue;
-		}
-		position = findNonWhitespaceCharacter(script, position + 1);
-	}
-	const nextKeyEnd = findLastNonWhitespaceCharacter(script, position);
-	const nextKeyStart = getNameStart(script, nextKeyEnd + 1);
-	return getLastObjValueEnd(script, nextKeyStart);
+function readValue(script: string, start: number): string {
+	const substring = script.slice(start);
+	const preprocessed = parse(substring, { startRule: 'Preprocess' });
+	return parse(preprocessed, { startRule: 'PartialExpr' });
 }
 
-function getLastObjValueEnd(script: string, position: number): number {
-	const valueEnd = findLastNonWhitespaceCharacter(script, position);
-	if (script[valueEnd]! === COMMA || script[valueEnd]! === SEMICOLON) {
-		return findLastNonWhitespaceCharacter(script, valueEnd) + 1;
-	} else {
-		return valueEnd + 1;
-	}
+function getObjValueEnd(script: string, valueStart: number): number {
+	const value = readValue(script, valueStart);
+	return valueStart + value.length;
 }
 
 export function replaceArr(node: Ast.Arr, script: string, ancestors: Ast.Node[]): string {
