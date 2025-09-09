@@ -95,3 +95,14 @@ describe('obj', () => {
 		transpileAndValidate(script, expected);
 	});
 });
+
+describe('def', () => {
+	test('expr: fn (children: return)', () => {
+		const script = dedent`
+			@f() {
+				return null
+			}
+		`;
+		transpileAndValidate(script, script);
+	});
+});

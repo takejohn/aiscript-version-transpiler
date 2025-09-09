@@ -16,7 +16,8 @@ export function replaceDefinition(node: Ast.Definition, script: string, ancestor
 		if (node.expr.type !== 'fn') {
 			throw new TypeError('Expected function');
 		}
-		return replaceFn(node.expr, script, ancestors, node.name);
+		const newAncestors = [node.expr, ...ancestors];
+		return replaceFn(node.expr, script, newAncestors, node.name);
 	} else {
 		return replaceVarDef(node, script, ancestors);
 	}
