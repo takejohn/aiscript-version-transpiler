@@ -9,7 +9,7 @@
 					v-model="input"
 					ref="inputArea"
 					@keydown="handleTab"
-					class="flex-1 p-3 border rounded-lg font-mono text-sm"
+					class="flex-1 p-3 border rounded-lg font-mono text-sm border-gray-300 text-gray-900 whitespace-pre overflow-x-auto"
 				></textarea>
 			</div>
 
