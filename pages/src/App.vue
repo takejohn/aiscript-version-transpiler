@@ -7,6 +7,8 @@
         <label class="mb-2 font-semibold text-gray-700">Input Script (v0.19.0)</label>
         <textarea
           v-model="input"
+          ref="inputArea"
+          @keydown="handleTab"
           class="flex-1 p-3 border rounded-lg font-mono text-sm"
         ></textarea>
       </div>
@@ -58,6 +60,7 @@ const defaultInput = `/* Write your AiScript code here... */`;
 const input = ref<string>(defaultInput);
 const output = ref<string>('');
 const isError = ref<boolean>(false);
+const inputArea = ref<HTMLTextAreaElement | null>(null);
 
 const showToast = ref(false);
 const toastMessage = ref('');
@@ -80,7 +83,59 @@ onMounted(() => {
   if (saved != null) {
     input.value = saved;
   }
-})
+});
+
+// Tabキー入力を処理
+function handleTab(e: KeyboardEvent) {
+  if (e.key === "Tab") {
+    e.preventDefault();
+    const textarea = inputArea.value;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    input.value =
+      input.value.substring(0, start) + "\t" + input.value.substring(end);
+
+    requestAnimationFrame(() => {
+      textarea.selectionStart = textarea.selectionEnd = start + 1;
+    });
+  }
+
+  // Enterキー入力を処理
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const textarea = inputArea.value;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    // 現在のカーソル位置より前のテキストを取得
+    const before = input.value.substring(0, start);
+
+    // 直前の行を取得
+    const lastLineBreak = Math.max(before.lastIndexOf("\n"), before.lastIndexOf("\r"));
+    const currentLine = before.substring(lastLineBreak + 1);
+
+    // 行頭の空白（スペースまたはタブ）のみを抽出
+    const indentMatch = currentLine.match(/^[ \t]*/);
+    const indent = indentMatch ? indentMatch[0] : "";
+
+    // 改行とインデントを挿入
+    const insertText = "\n" + indent;
+    input.value =
+      input.value.substring(0, start) +
+      insertText +
+      input.value.substring(end);
+
+    requestAnimationFrame(() => {
+      const newPos = start + insertText.length;
+      textarea.selectionStart = textarea.selectionEnd = newPos;
+    });
+  }
+}
 
 // 出力をコピー
 const copyOutput = async () => {
@@ -97,8 +152,8 @@ function triggerToast(message: string) {
   toastMessage.value = message;
   showToast.value = true;
   if (toastTimer) {
-		clearTimeout(toastTimer);
-	}
+    clearTimeout(toastTimer);
+  }
   toastTimer = window.setTimeout(() => {
     showToast.value = false;
   }, 2000);
