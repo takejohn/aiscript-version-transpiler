@@ -106,3 +106,16 @@ describe('def', () => {
 		transpileAndValidate(script, script);
 	});
 });
+
+describe('prop', () => {
+	test('target: num (integer)', () => {
+		const script = '42.to_str';
+		const expected = '(42).to_str';
+		transpileAndValidate(script, expected);
+	});
+
+	test('target: num (decimal)', () => {
+		const script = '42.0.to_str';
+		transpileAndValidate(script, script);
+	});
+});
