@@ -1,9 +1,10 @@
 import { expect } from 'vitest';
 import { transpile } from '../src/main.js';
 import { Parser } from 'aiscript.1.1.0';
+import { TranspilerConfig } from '../src/config.js';
 
-export function transpileAndValidate(script: string, expected: string): void {
-	const output = transpile(script);
+export function transpileAndValidate(script: string, expected: string, config?: TranspilerConfig): void {
+	const output = transpile(script, config);
 	expect(output).toBe(expected);
 	Parser.parse(output); // should not throw syntax error
 }

@@ -26,6 +26,7 @@ import { replaceBinaryOperation } from './binaryOperation.js';
 import { replaceCall } from './call.js';
 import { replaceIndex } from './index.js';
 import { replaceProp } from './prop.js';
+import type { TranspilerConfig } from '../config.js';
 
 export class ReplacementsBuilder {
 	private replacements: SliceReplacement[] = [];
@@ -100,13 +101,30 @@ export class ReplacementsBuilder {
 	}
 }
 
-export function replaceAst(ast: Ast.Node[], script: string, ancestors: Ast.Node[]): string {
-	const replacements: readonly SliceReplacement[] = ast.map((node) => {
-		const content = replaceNodeAndLineSeparatorsInParentheses(node, script, ancestors);
-		const { start, end } = getActualLocation(node, script, true);
-		return { start, end: end + 1, content };
-	});
+export function replaceAst(ast: Ast.Node[], script: string, ancestors: Ast.Node[], config: TranspilerConfig): string {
+	const replacements: readonly SliceReplacement[] = [
+		...versionNotationReplacer(script, config),
+		...ast.map((node) => {
+			const content = replaceNodeAndLineSeparatorsInParentheses(node, script, ancestors);
+			const { start, end } = getActualLocation(node, script, true);
+			return { start, end: end + 1, content };
+		}),
+	];
 	return replaceSlices(script, replacements);
+}
+
+function versionNotationReplacer(script: string, config: TranspilerConfig): SliceReplacement[] {
+	if (!config.setVersionNotation) {
+		return [];
+	}
+
+	const match = /(^\s*\/\/\/\s*@\s*)([A-Z0-9_.-]+)(?:[\r\n][\s\S]*)?$/i.exec(script);
+	if (match == null) {
+		return [{ start: 0, end: 0, content: '/// @ 1.1.0\n' }];
+	}
+	const start = match[1]!.length;
+	const end = start + match[2]!.length;
+	return [{ start, end, content: '1.1.0' }];
 }
 
 export function replaceNodeAndLineSeparatorsInParentheses(

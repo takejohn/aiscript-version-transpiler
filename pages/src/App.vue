@@ -1,5 +1,12 @@
 <template>
 	<div class="min-h-screen p-6 bg-gray-50 relative">
+		<button
+			class="absolute top-4 right-4 p-1 bg-gray-600 text-white rounded hover:bg-gray-700"
+			@click="showConfig = true"
+		>
+			<SettingsIcon class="w-4 h-4" />
+		</button>
+
 		<h1 class="text-2xl font-bold mb-4">aiscript-version-transpiler</h1>
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<!-- 入力エリア -->
@@ -48,6 +55,12 @@
 			</div>
 		</transition>
 
+		<ConfigModal
+			v-if="showConfig"
+			v-model="transpilerConfig"
+			@close="showConfig = false"
+		/>
+
 		<!-- フッター -->
     <footer class="mt-8 pt-4 border-t text-sm text-gray-600 text-center">
       <FooterLink href="https://github.com/takejohn/aiscript-version-transpiler">
@@ -68,11 +81,13 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { transpile } from 'aiscript-version-transpiler';
-import { Copy as CopyIcon } from 'lucide-vue-next';
+import { Copy as CopyIcon, SettingsIcon } from 'lucide-vue-next';
 
 import FooterLink from '../components/FooterLink.vue';
+import ConfigModal from '../components/ConfigModal.vue';
+import { loadConfig, saveConfig } from './scripts/config';
 
-const STORAGE_KEY = 'aiscript-version-transpiler:input-script';
+const STORAGE_INPUT_STRING_KEY = 'aiscript-version-transpiler:input-script';
 const defaultInput = `/* Write your AiScript code here... */`;
 const input = ref<string>(defaultInput);
 const output = ref<string>('');
@@ -83,20 +98,32 @@ const showToast = ref(false);
 const toastMessage = ref('');
 let toastTimer: number | null = null;
 
-// 入力変更時にリアルタイムで変換
-watch(input, (newVal) => {
-	localStorage.setItem(STORAGE_KEY, newVal);
+const transpilerConfig = ref(loadConfig());
+const showConfig = ref(false);
+
+function updateOutput() {
 	try {
-		output.value = transpile(newVal);
+		output.value = transpile(input.value, transpilerConfig.value);
 		isError.value = false;
 	} catch (err: any) {
 		output.value = `Error: ${err.message ?? err}`;
 		isError.value = true;
 	}
+}
+
+// 入力変更時にリアルタイムで変換
+watch(input, (value) => {
+	localStorage.setItem(STORAGE_INPUT_STRING_KEY, value);
+	updateOutput();
+});
+
+watch(transpilerConfig, (value) => {
+	saveConfig(value);
+	updateOutput();
 });
 
 onMounted(() => {
-	const saved = localStorage.getItem(STORAGE_KEY);
+	const saved = localStorage.getItem(STORAGE_INPUT_STRING_KEY);
 	if (saved != null) {
 		input.value = saved;
 	}
